@@ -76,3 +76,45 @@ def get_courses():
 
 def get_assignments():
     return get_from_table('assignment')
+
+def insert_instructor(json):
+    cursor = connection.cursor()
+    
+    query = f'''
+        INSERT INTO instructor
+        VALUES(NULL, '{json['name']}', '{json['qualifications']}', {json['atUIUC']}, '{json['semesterAvailable']}')
+    '''
+    cursor.execute(query)
+    connection.commit()
+    cursor.execute('SELECT LAST_INSERT_ID()')
+    new_primary_key = cursor.fetchall()[0][0]
+
+    cursor.close()
+    return new_primary_key
+
+def insert_course(json):
+    cursor = connection.cursor()
+    
+    query = f'''
+        INSERT INTO course
+        VALUES(NULL, {json['crn']}, '{json['semester']}', '{json['description']}', {json['numStudents']}, '{json['dept']}', {json['undergrad']}, {json['year']}, {json['online']}, {json['creditHours']})
+    '''
+    cursor.execute(query)
+    connection.commit()
+    cursor.execute('SELECT LAST_INSERT_ID()')
+    new_primary_key = cursor.fetchall()[0][0]
+
+    cursor.close()
+    return new_primary_key
+
+def insert_assignment(json):
+    cursor = connection.cursor()
+    
+    query = f'''
+        INSERT INTO assignment
+        VALUES({json['instructorID']}, {json['courseID']})
+    '''
+    cursor.execute(query)
+    connection.commit()
+
+    cursor.close()
