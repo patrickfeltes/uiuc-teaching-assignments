@@ -86,8 +86,7 @@ def insert_instructor(json):
     '''
     cursor.execute(query)
     connection.commit()
-    cursor.execute('SELECT LAST_INSERT_ID()')
-    new_primary_key = cursor.fetchall()[0][0]
+    new_primary_key = cursor.lastrowid
 
     cursor.close()
     return new_primary_key
@@ -101,8 +100,7 @@ def insert_course(json):
     '''
     cursor.execute(query)
     connection.commit()
-    cursor.execute('SELECT LAST_INSERT_ID()')
-    new_primary_key = cursor.fetchall()[0][0]
+    new_primary_key = cursor.lastrowid
 
     cursor.close()
     return new_primary_key
