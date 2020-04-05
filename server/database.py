@@ -165,3 +165,47 @@ def delete_assignment(instructor_id, course_id):
 
     d = { "instructorID": instructor_id, "courseID": course_id }
     return json.dumps(d)
+
+def update_instructor(obj):
+    cursor = connection.cursor()
+    
+    update_query = f'''
+        UPDATE instructor
+        SET name = '{obj['name']}', qualifications = '{obj['qualifications']}', atUIUC = {obj['atUIUC']}, semesterAvailable = '{obj['semesterAvailable']}'
+        WHERE instructorID = {obj['instructorID']}
+    '''
+
+    cursor.execute(update_query)
+    connection.commit()
+
+    select_query = f'SELECT * FROM instructor WHERE instructorID = ' + str(obj['instructorID']) + ' LIMIT 1'
+    cursor.execute(select_query)
+    result = cursor.fetchall()[0]
+    key_names = list(map(lambda x : x[0], cursor.description))
+    json_result = json.dumps(dict(zip(key_names, result)))
+
+    cursor.close()
+
+    return json_result
+
+def update_course(obj):
+    cursor = connection.cursor()
+    
+    update_query = f'''
+        UPDATE course
+        SET crn = {obj['crn']}, semester = '{obj['semester']}', description = '{obj['description']}', numStudents = {obj['numStudents']}, dept = '{obj['dept']}', undergrad = {obj['undergrad']}, year = {obj['year']}, online = {obj['online']}, creditHours = {obj['creditHours']}
+        WHERE courseID = {obj['courseID']}
+    '''
+
+    cursor.execute(update_query)
+    connection.commit()
+
+    select_query = f'SELECT * FROM course WHERE courseID = ' + str(obj['courseID']) + ' LIMIT 1'
+    cursor.execute(select_query)
+    result = cursor.fetchall()[0]
+    key_names = list(map(lambda x : x[0], cursor.description))
+    json_result = json.dumps(dict(zip(key_names, result)))
+
+    cursor.close()
+
+    return json_result

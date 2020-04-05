@@ -47,6 +47,16 @@ def delete_assignment():
     course_id = request.args['course_id']
     return database.delete_assignment(instructor_id, course_id)
 
+@app.route('/instructor', methods = ['PUT'])
+def update_instructor():
+    json = request.json
+    return database.update_instructor(json)
+
+@app.route('/course', methods = ['PUT'])
+def update_course():
+    json = request.json
+    return database.update_course(json)
+
 if __name__ == '__main__':
     database.create_tables()
     app.run(debug = True)
