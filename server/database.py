@@ -45,8 +45,8 @@ def create_tables():
             `instructorID` int(11) NOT NULL,
             `courseID` int(11) NOT NULL,
             PRIMARY KEY (`instructorID`, `courseID`),
-            FOREIGN KEY (`instructorID`) REFERENCES `instructor` (`instructorID`),
-            FOREIGN KEY (`courseID`) REFERENCES `course` (`courseID`)
+            FOREIGN KEY (`instructorID`) REFERENCES `instructor` (`instructorID`) ON DELETE CASCADE,
+            FOREIGN KEY (`courseID`) REFERENCES `course` (`courseID`) ON DELETE CASCADE
         )
     '''
 
@@ -118,3 +118,50 @@ def insert_assignment(json):
     connection.commit()
 
     cursor.close()
+
+def delete_instructor(instructor_id):
+    cursor = connection.cursor()
+
+    select_query = f'SELECT * FROM instructor WHERE instructorID = {instructor_id} LIMIT 1'
+    cursor.execute(select_query)
+    result = cursor.fetchall()[0]
+    key_names = list(map(lambda x : x[0], cursor.description))
+    json_result = json.dumps(dict(zip(key_names, result)))
+
+    delete_query = f'DELETE FROM instructor WHERE instructorID = {instructor_id}'
+    cursor.execute(delete_query)
+    connection.commit()
+
+    cursor.close()
+
+    return json_result
+
+def delete_course(course_id):
+    cursor = connection.cursor()
+
+    select_query = f'SELECT * FROM course WHERE courseID = {course_id} LIMIT 1'
+    cursor.execute(select_query)
+    result = cursor.fetchall()[0]
+    key_names = list(map(lambda x : x[0], cursor.description))
+    json_result = json.dumps(dict(zip(key_names, result)))
+
+    delete_query = f'DELETE FROM course WHERE courseID = {course_id}'
+    cursor.execute(delete_query)
+    connection.commit()
+
+    cursor.close()
+
+    return json_result
+
+def delete_assignment(instructor_id, course_id):
+    cursor = connection.cursor()
+
+    delete_query = f'DELETE FROM assignment WHERE instructorID = {instructor_id} AND courseID = {course_id}'
+    cursor.execute(delete_query)
+    connection.commit()
+
+    cursor.close()
+
+
+    d = { "instructorID": instructor_id, "courseID": course_id }
+    return json.dumps(d)

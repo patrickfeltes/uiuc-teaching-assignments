@@ -33,6 +33,20 @@ def insert_assignment():
     database.insert_assignment(json)
     return json
 
+@app.route('/instructor/<instructor_id>', methods = ['DELETE'])
+def delete_instructor(instructor_id):
+    return database.delete_instructor(instructor_id)
+
+@app.route('/course/<course_id>', methods = ['DELETE'])
+def delete_course(course_id):
+    return database.delete_course(course_id)
+
+@app.route('/assignment', methods = ['DELETE'])
+def delete_assignment():
+    instructor_id = request.args['instructor_id']
+    course_id = request.args['course_id']
+    return database.delete_assignment(instructor_id, course_id)
+
 if __name__ == '__main__':
     database.create_tables()
     app.run(debug = True)
