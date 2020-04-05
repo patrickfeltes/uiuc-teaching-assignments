@@ -1,4 +1,5 @@
 import mysql.connector
+import json
 
 connection = mysql.connector.connect(user='root', host='localhost', database='teaching_assignments')
 
@@ -51,4 +52,27 @@ def create_tables():
 
     if 'assignment' not in existing_tables:
         cursor.execute(assignment_table_query)
+
+    cursor.close()
+
+def get_from_table(table_name):
+    cursor = connection.cursor()
+    query = f'SELECT * FROM {table_name}'
+    cursor.execute(query)
     
+    results = cursor.fetchall()
+    key_names = list(map(lambda x : x[0], cursor.description))
+    keyed_results = list(map(lambda x : dict(zip(key_names, x)), results))
+    json_string = json.dumps(keyed_results)
+
+    cursor.close()
+    return json_string
+
+def get_instructors():
+    return get_from_table('instructor')
+
+def get_courses():
+    return get_from_table('course')
+
+def get_assignments():
+    return get_from_table('assignment')
