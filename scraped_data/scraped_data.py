@@ -26,19 +26,19 @@ for url in soup.find_all('calendarYear'):
                     try:
                         csCourse = urllib.request.urlopen(csCourseUrl['href'])
                         csCourseSoup = bs.BeautifulSoup(csCourse, 'xml')
-                        csCourseDescription = csCourseSoup.description
-                        csCourseCreditHrs = csCourseSoup.creditHours
+                        csCourseDescription = csCourseSoup.description.text
+                        csCourseCreditHrs = csCourseSoup.creditHours.text
                         for csSectionUrl in csCourseSoup.find_all('section'):
                             item = {}
                             csSection = urllib.request.urlopen(csSectionUrl['href'])
                             csSectionSoup = bs.BeautifulSoup(csSection, 'xml')
                             
-                            item['calendarYear'] = csSectionSoup.calendarYear
-                            item['term'] = csSectionSoup.term
+                            item['calendarYear'] = csSectionSoup.calendarYear.text
+                            item['term'] = csSectionSoup.term.text
                             item['courseNumber'] = csSectionSoup.course['id']
-                            item['instructor'] = csSectionSoup.meeting.instructor
+                            item['instructor'] = csSectionSoup.meeting.instructor.text
                             item['description'] = csCourseDescription
-                            item['creditHrs'] = csCourseCreditHrs 
+                            item['creditHrs'] = csCourseCreditHrs
                             data.append(item)
                     except:
                         print("ERROR")
