@@ -42,9 +42,10 @@ def create_tables():
 
     assignment_table_query = '''
         CREATE TABLE `assignment` (
+            `assignmentID` int(11) NOT NULL AUTO_INCREMENT,
             `instructorID` int(11) NOT NULL,
             `courseID` int(11) NOT NULL,
-            PRIMARY KEY (`instructorID`, `courseID`),
+            PRIMARY KEY (`assignmentID`),
             FOREIGN KEY (`instructorID`) REFERENCES `instructor` (`instructorID`) ON DELETE CASCADE,
             FOREIGN KEY (`courseID`) REFERENCES `course` (`courseID`) ON DELETE CASCADE
         )
@@ -110,12 +111,14 @@ def insert_assignment(json):
     
     query = f'''
         INSERT INTO assignment
-        VALUES({json['instructorID']}, {json['courseID']})
+        VALUES(NULL, {json['instructorID']}, {json['courseID']})
     '''
     cursor.execute(query)
     connection.commit()
+    new_primary_key = cursor.lastrowid
 
     cursor.close()
+    return new_primary_key
 
 def delete_instructor(instructor_id):
     cursor = connection.cursor()
@@ -151,18 +154,22 @@ def delete_course(course_id):
 
     return json_result
 
-def delete_assignment(instructor_id, course_id):
+def delete_assignment(assignment_id):
     cursor = connection.cursor()
 
-    delete_query = f'DELETE FROM assignment WHERE instructorID = {instructor_id} AND courseID = {course_id}'
+    select_query = f'SELECT * FROM assignment WHERE assignmentID = {assignment_id} LIMIT 1'
+    cursor.execute(select_query)
+    result = cursor.fetchall()[0]
+    key_names = list(map(lambda x : x[0], cursor.description))
+    json_result = json.dumps(dict(zip(key_names, result)))
+
+    delete_query = f'DELETE FROM assignment WHERE assignmentID = {assignment_id}'
     cursor.execute(delete_query)
     connection.commit()
 
     cursor.close()
 
-
-    d = { "instructorID": instructor_id, "courseID": course_id }
-    return json.dumps(d)
+    return json_result
 
 def update_instructor(obj):
     cursor = connection.cursor()
@@ -199,6 +206,28 @@ def update_course(obj):
     connection.commit()
 
     select_query = f'SELECT * FROM course WHERE courseID = ' + str(obj['courseID']) + ' LIMIT 1'
+    cursor.execute(select_query)
+    result = cursor.fetchall()[0]
+    key_names = list(map(lambda x : x[0], cursor.description))
+    json_result = json.dumps(dict(zip(key_names, result)))
+
+    cursor.close()
+
+    return json_result
+
+def update_assignment(obj):
+    cursor = connection.cursor()
+
+    update_query = f'''
+        UPDATE assignment
+        SET instructorID = {obj['instructorID']}, courseID = {obj['courseID']}
+        WHERE assignmentID = {obj['assignmentID']}
+    '''
+
+    cursor.execute(update_query)
+    connection.commit()
+
+    select_query = f'SELECT * FROM assignment WHERE assignmentID = ' + str(obj['assignmentID']) + ' LIMIT 1'
     cursor.execute(select_query)
     result = cursor.fetchall()[0]
     key_names = list(map(lambda x : x[0], cursor.description))
