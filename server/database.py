@@ -1,9 +1,10 @@
-import mysql.connector
+import mysql.connector.pooling
 import json
 
-connection = mysql.connector.connect(user='root', host='localhost', database='teaching_assignments')
+connection_pool = mysql.connector.pooling.MySQLConnectionPool(user='root', host='localhost', database='teaching_assignments')
 
 def create_tables():
+    connection = connection_pool.get_connection()
     cursor = connection.cursor()
     cursor.execute('SHOW TABLES')
     existing_tables = list(map(lambda x : x[0], cursor.fetchall()))
@@ -55,8 +56,10 @@ def create_tables():
         cursor.execute(assignment_table_query)
 
     cursor.close()
+    connection.close()
 
 def get_from_table(table_name):
+    connection = connection_pool.get_connection()
     cursor = connection.cursor()
     query = f'SELECT * FROM {table_name}'
     cursor.execute(query)
@@ -67,6 +70,7 @@ def get_from_table(table_name):
     json_string = json.dumps(keyed_results)
 
     cursor.close()
+    connection.close()
     return json_string
 
 def get_instructors():
@@ -79,6 +83,7 @@ def get_assignments():
     return get_from_table('assignment')
 
 def insert_instructor(json):
+    connection = connection_pool.get_connection()
     cursor = connection.cursor()
     
     query = f'''
@@ -90,9 +95,11 @@ def insert_instructor(json):
     new_primary_key = cursor.lastrowid
 
     cursor.close()
+    connection.close()
     return new_primary_key
 
 def insert_course(json):
+    connection = connection_pool.get_connection()
     cursor = connection.cursor()
     
     query = f'''
@@ -104,9 +111,11 @@ def insert_course(json):
     new_primary_key = cursor.lastrowid
 
     cursor.close()
+    connection.close()
     return new_primary_key
 
 def insert_assignment(json):
+    connection = connection_pool.get_connection()
     cursor = connection.cursor()
     
     query = f'''
@@ -118,9 +127,11 @@ def insert_assignment(json):
     new_primary_key = cursor.lastrowid
 
     cursor.close()
+    connection.close()
     return new_primary_key
 
 def delete_instructor(instructor_id):
+    connection = connection_pool.get_connection()
     cursor = connection.cursor()
 
     select_query = f'SELECT * FROM instructor WHERE instructorID = {instructor_id} LIMIT 1'
@@ -134,10 +145,12 @@ def delete_instructor(instructor_id):
     connection.commit()
 
     cursor.close()
+    connection.close()
 
     return json_result
 
 def delete_course(course_id):
+    connection = connection_pool.get_connection()
     cursor = connection.cursor()
 
     select_query = f'SELECT * FROM course WHERE courseID = {course_id} LIMIT 1'
@@ -151,10 +164,12 @@ def delete_course(course_id):
     connection.commit()
 
     cursor.close()
+    connection.close()
 
     return json_result
 
 def delete_assignment(assignment_id):
+    connection = connection_pool.get_connection()
     cursor = connection.cursor()
 
     select_query = f'SELECT * FROM assignment WHERE assignmentID = {assignment_id} LIMIT 1'
@@ -168,10 +183,12 @@ def delete_assignment(assignment_id):
     connection.commit()
 
     cursor.close()
+    connection.close()
 
     return json_result
 
 def update_instructor(obj):
+    connection = connection_pool.get_connection()
     cursor = connection.cursor()
     
     update_query = f'''
@@ -190,10 +207,12 @@ def update_instructor(obj):
     json_result = json.dumps(dict(zip(key_names, result)))
 
     cursor.close()
+    connection.close()
 
     return json_result
 
 def update_course(obj):
+    connection = connection_pool.get_connection()
     cursor = connection.cursor()
     
     update_query = f'''
@@ -212,10 +231,12 @@ def update_course(obj):
     json_result = json.dumps(dict(zip(key_names, result)))
 
     cursor.close()
+    connection.close()
 
     return json_result
 
 def update_assignment(obj):
+    connection = connection_pool.get_connection()
     cursor = connection.cursor()
 
     update_query = f'''
@@ -234,5 +255,6 @@ def update_assignment(obj):
     json_result = json.dumps(dict(zip(key_names, result)))
 
     cursor.close()
+    connection.close()
 
     return json_result
