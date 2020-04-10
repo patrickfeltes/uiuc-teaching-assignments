@@ -27,17 +27,17 @@ const App = () => {
     );
   }, []);
 
-  // useEffect(() => {
-  //   fetch("/course").then((response) =>
-  //     response.json().then((data) => setCourses(data))
-  //   );
-  // }, []);
+  useEffect(() => {
+    fetch("/course").then((response) =>
+      response.json().then((data) => setCourses(data))
+    );
+  }, []);
 
-  // useEffect(() => {
-  //   fetch("/assignment").then((response) =>
-  //     response.json().then((data) => setAssignments(data))
-  //   );
-  // }, []);
+  useEffect(() => {
+    fetch("/assignment").then((response) =>
+      response.json().then((data) => setAssignments(data))
+    );
+  }, []);
 
   return (
     <div className="container">
