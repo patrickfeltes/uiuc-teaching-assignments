@@ -55,6 +55,20 @@ def create_tables():
     if 'assignment' not in existing_tables:
         cursor.execute(assignment_table_query)
 
+    related_instructor_query = '''
+        CREATE TABLE `related_instructor` (
+            `relatedID` int(11) NOT NULL AUTO_INCREMENT,
+            `relatedInstructorID1` int(11) NOT NULL,
+            `relatedInstructorID2` int(11) NOT NULL,
+            PRIMARY KEY (`relatedID`),
+            FOREIGN KEY (`relatedInstructorID1`) REFERENCES `instructor` (`instructorID`) ON DELETE CASCADE,
+            FOREIGN KEY (`relatedInstructorID2`) REFERENCES `instructor` (`instructorID`) ON DELETE CASCADE
+        )
+    '''
+
+    if 'related_instructor' not in existing_tables:
+        cursor.execute(related_instructor_query)
+
     cursor.close()
     connection.close()
 
@@ -81,6 +95,9 @@ def get_courses():
 
 def get_assignments():
     return get_from_table('assignment')
+
+def get_related_instructors():
+    return get_from_table('related_instructor')
 
 def insert_instructor(json):
     connection = connection_pool.get_connection()
@@ -121,6 +138,22 @@ def insert_assignment(json):
     query = f'''
         INSERT INTO assignment
         VALUES(NULL, {json['instructorID']}, {json['courseID']})
+    '''
+    cursor.execute(query)
+    connection.commit()
+    new_primary_key = cursor.lastrowid
+
+    cursor.close()
+    connection.close()
+    return new_primary_key
+
+def insert_related_instructor(json):
+    connection = connection_pool.get_connection()
+    cursor = connection.cursor()
+    
+    query = f'''
+        INSERT INTO related_instructor
+        VALUES(NULL, {json['relatedInstructorID1']}, {json['relatedInstructorID2']})
     '''
     cursor.execute(query)
     connection.commit()
@@ -179,6 +212,25 @@ def delete_assignment(assignment_id):
     json_result = json.dumps(dict(zip(key_names, result)))
 
     delete_query = f'DELETE FROM assignment WHERE assignmentID = {assignment_id}'
+    cursor.execute(delete_query)
+    connection.commit()
+
+    cursor.close()
+    connection.close()
+
+    return json_result
+
+def delete_related_instructor(related_id):
+    connection = connection_pool.get_connection()
+    cursor = connection.cursor()
+
+    select_query = f'SELECT * FROM related_instructor WHERE relatedID = {related_id} LIMIT 1'
+    cursor.execute(select_query)
+    result = cursor.fetchall()[0]
+    key_names = list(map(lambda x : x[0], cursor.description))
+    json_result = json.dumps(dict(zip(key_names, result)))
+
+    delete_query = f'DELETE FROM related_instructor WHERE relatedID = {related_id}'
     cursor.execute(delete_query)
     connection.commit()
 
@@ -249,6 +301,30 @@ def update_assignment(obj):
     connection.commit()
 
     select_query = f'SELECT * FROM assignment WHERE assignmentID = ' + str(obj['assignmentID']) + ' LIMIT 1'
+    cursor.execute(select_query)
+    result = cursor.fetchall()[0]
+    key_names = list(map(lambda x : x[0], cursor.description))
+    json_result = json.dumps(dict(zip(key_names, result)))
+
+    cursor.close()
+    connection.close()
+
+    return json_result
+
+def update_related_instructor(obj):
+    connection = connection_pool.get_connection()
+    cursor = connection.cursor()
+
+    update_query = f'''
+        UPDATE related_instructor
+        SET relatedInstructorID1 = {obj['relatedInstructorID1']}, relatedInstructorID2 = {obj['relatedInstructorID2']}
+        WHERE relatedID = {obj['relatedID']}
+    '''
+
+    cursor.execute(update_query)
+    connection.commit()
+
+    select_query = f'SELECT * FROM related_instructor WHERE relatedID = ' + str(obj['relatedID']) + ' LIMIT 1'
     cursor.execute(select_query)
     result = cursor.fetchall()[0]
     key_names = list(map(lambda x : x[0], cursor.description))
