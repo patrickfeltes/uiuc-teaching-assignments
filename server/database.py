@@ -23,7 +23,7 @@ def create_tables():
         CREATE TABLE `course` (
             `courseID` int(11) NOT NULL AUTO_INCREMENT,
             `courseNumber` int(11) NOT NULL,
-            `description` varchar(255),
+            `description` TEXT,
             `creditHours` int(11),
             PRIMARY KEY (`courseID`)
         )
@@ -60,6 +60,27 @@ def create_tables():
 
     if 'related_instructor' not in existing_tables:
         cursor.execute(related_instructor_query)
+
+    cursor.close()
+    connection.close()
+
+def clear_all_tables():
+    connection = connection_pool.get_connection()
+    cursor = connection.cursor()
+
+    query = 'DELETE FROM instructor'
+    cursor.execute(query)
+
+    query = 'DELETE FROM course'
+    cursor.execute(query)
+
+    query = 'DELETE FROM assignment'
+    cursor.execute(query)
+
+    query = 'DELETE FROM related_instructor'
+    cursor.execute(query)
+
+    connection.commit()
 
     cursor.close()
     connection.close()
@@ -326,3 +347,20 @@ def update_related_instructor(obj):
     connection.close()
 
     return json_result
+
+def get_all_instructors_teaching_course(course_id):
+    connection = connection_pool.get_connection()
+    cursor = connection.cursor()
+
+    select_query = f'''
+        SELECT instructorID FROM assignment WHERE courseID = {course_id}
+    '''
+
+    cursor.execute(select_query)
+
+    lst = list(set(list(map(lambda x: x[0], cursor.fetchall()))))
+
+    cursor.close()
+    connection.close()
+
+    return lst

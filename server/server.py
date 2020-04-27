@@ -1,5 +1,6 @@
 from flask import Flask, request
 import database
+import json
 
 app = Flask(__name__)
 
@@ -80,5 +81,4 @@ def update_related_instructor():
     return database.update_related_instructor(json)
 
 if __name__ == '__main__':
-    database.create_tables()
-    app.run(debug = True)
+    app.run(debug = False)
