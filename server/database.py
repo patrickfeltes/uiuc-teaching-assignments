@@ -13,9 +13,6 @@ def create_tables():
         CREATE TABLE `instructor` (
             `instructorID` int(11) NOT NULL AUTO_INCREMENT,
             `name` varchar(255) NOT NULL,
-            `qualifications` varchar(255),
-            `atUIUC` BOOLEAN,
-            `semesterAvailable` varchar(255),
             PRIMARY KEY (`instructorID`)
         )
     '''
@@ -25,14 +22,8 @@ def create_tables():
     course_table_query = '''
         CREATE TABLE `course` (
             `courseID` int(11) NOT NULL AUTO_INCREMENT,
-            `crn` int(11) NOT NULL,
-            `semester` varchar(255),
+            `courseNumber` int(11) NOT NULL,
             `description` varchar(255),
-            `numStudents` int(11),
-            `dept` varchar(255),
-            `undergrad` BOOLEAN,
-            `year` int(11),
-            `online` BOOLEAN,
             `creditHours` int(11),
             PRIMARY KEY (`courseID`)
         )
@@ -46,6 +37,7 @@ def create_tables():
             `assignmentID` int(11) NOT NULL AUTO_INCREMENT,
             `instructorID` int(11) NOT NULL,
             `courseID` int(11) NOT NULL,
+            `semester` varchar(255),
             PRIMARY KEY (`assignmentID`),
             FOREIGN KEY (`instructorID`) REFERENCES `instructor` (`instructorID`) ON DELETE CASCADE,
             FOREIGN KEY (`courseID`) REFERENCES `course` (`courseID`) ON DELETE CASCADE
@@ -105,7 +97,7 @@ def insert_instructor(json):
     
     query = f'''
         INSERT INTO instructor
-        VALUES(NULL, '{json['name']}', '{json['qualifications']}', {json['atUIUC']}, '{json['semesterAvailable']}')
+        VALUES(NULL, '{json['name']}')
     '''
     cursor.execute(query)
     connection.commit()
@@ -121,7 +113,7 @@ def insert_course(json):
     
     query = f'''
         INSERT INTO course
-        VALUES(NULL, {json['crn']}, '{json['semester']}', '{json['description']}', {json['numStudents']}, '{json['dept']}', {json['undergrad']}, {json['year']}, {json['online']}, {json['creditHours']})
+        VALUES(NULL, {json['courseNumber']}, '{json['description']}', {json['creditHours']})
     '''
     cursor.execute(query)
     connection.commit()
@@ -137,7 +129,7 @@ def insert_assignment(json):
     
     query = f'''
         INSERT INTO assignment
-        VALUES(NULL, {json['instructorID']}, {json['courseID']})
+        VALUES(NULL, {json['instructorID']}, {json['courseID']}, '{json['semester']}')
     '''
     cursor.execute(query)
     connection.commit()
@@ -245,7 +237,7 @@ def update_instructor(obj):
     
     update_query = f'''
         UPDATE instructor
-        SET name = '{obj['name']}', qualifications = '{obj['qualifications']}', atUIUC = {obj['atUIUC']}, semesterAvailable = '{obj['semesterAvailable']}'
+        SET name = '{obj['name']}'
         WHERE instructorID = {obj['instructorID']}
     '''
 
@@ -269,7 +261,7 @@ def update_course(obj):
     
     update_query = f'''
         UPDATE course
-        SET crn = {obj['crn']}, semester = '{obj['semester']}', description = '{obj['description']}', numStudents = {obj['numStudents']}, dept = '{obj['dept']}', undergrad = {obj['undergrad']}, year = {obj['year']}, online = {obj['online']}, creditHours = {obj['creditHours']}
+        SET courseNumber = {obj['courseNumber']}, description = '{obj['description']}', creditHours = {obj['creditHours']}
         WHERE courseID = {obj['courseID']}
     '''
 
@@ -293,7 +285,7 @@ def update_assignment(obj):
 
     update_query = f'''
         UPDATE assignment
-        SET instructorID = {obj['instructorID']}, courseID = {obj['courseID']}
+        SET instructorID = {obj['instructorID']}, courseID = {obj['courseID']}, semester = '{obj['semester']}'
         WHERE assignmentID = {obj['assignmentID']}
     '''
 

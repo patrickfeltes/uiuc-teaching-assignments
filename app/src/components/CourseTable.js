@@ -63,36 +63,12 @@ const CourseTable = () => (
           hideInUpdateForm
         />
         <Field
-          name="crn"
-          label="crn"
-        />
-        <Field
-          name="semester"
-          label="semester"
+          name="courseNumber"
+          label="courseNumber"
         />
         <Field
           name="description"
           label="description"
-        />
-        <Field
-          name="numStudents"
-          label="numStudents"
-        />
-        <Field
-          name="dept"
-          label="dept"
-        />
-        <Field
-          name="undergrad"
-          label="undergrad"
-        />
-        <Field
-          name="year"
-          label="year"
-        />
-        <Field
-          name="online"
-          label="online"
         />
         <Field
           name="creditHours"

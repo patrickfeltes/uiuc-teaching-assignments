@@ -66,18 +66,6 @@ const InstructorTable = () => (
           name="name"
           label="name"
         />
-        <Field
-          name="qualifications"
-          label="qualifications"
-        />
-        <Field
-          name="atUIUC"
-          label="atUIUC"
-        />
-        <Field
-          name="semesterAvailable"
-          label="semesterAvailable"
-        />
       </Fields>
       <CreateForm
         title="Instructor Creation"

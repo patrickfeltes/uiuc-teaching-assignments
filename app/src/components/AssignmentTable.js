@@ -70,6 +70,10 @@ const AssignmentTable = () => (
           name="instructorID"
           label="instructorID"
         />
+        <Field
+          name="semester"
+          label="semester"
+        />
       </Fields>
       <CreateForm
         title="Assignment Creation"
