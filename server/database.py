@@ -38,6 +38,7 @@ def create_tables():
             `instructorID` int(11) NOT NULL,
             `courseID` int(11) NOT NULL,
             `semester` varchar(255),
+            `calendarYear` int(11),
             PRIMARY KEY (`assignmentID`),
             FOREIGN KEY (`instructorID`) REFERENCES `instructor` (`instructorID`) ON DELETE CASCADE,
             FOREIGN KEY (`courseID`) REFERENCES `course` (`courseID`) ON DELETE CASCADE
@@ -150,7 +151,7 @@ def insert_assignment(json):
     
     query = f'''
         INSERT INTO assignment
-        VALUES(NULL, {json['instructorID']}, {json['courseID']}, '{json['semester']}')
+        VALUES(NULL, {json['instructorID']}, {json['courseID']}, '{json['semester']}', {json['calendarYear']})
     '''
     cursor.execute(query)
     connection.commit()
@@ -306,7 +307,7 @@ def update_assignment(obj):
 
     update_query = f'''
         UPDATE assignment
-        SET instructorID = {obj['instructorID']}, courseID = {obj['courseID']}, semester = '{obj['semester']}'
+        SET instructorID = {obj['instructorID']}, courseID = {obj['courseID']}, semester = '{obj['semester']}, calendarYear = {obj['calendarYear']}'
         WHERE assignmentID = {obj['assignmentID']}
     '''
 

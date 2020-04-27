@@ -74,6 +74,10 @@ const AssignmentTable = () => (
           name="semester"
           label="semester"
         />
+        <Field
+          name="calendarYear"
+          label="calendarYear"
+        />
       </Fields>
       <CreateForm
         title="Assignment Creation"

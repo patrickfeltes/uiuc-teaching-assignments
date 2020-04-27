@@ -37,7 +37,7 @@ def insert_scraped_data():
         prof_id = name_to_id[prof_name]
         course_id = course_number_to_id[course_number]
 
-        obj = { "courseID": course_id, "instructorID": prof_id, "semester": semester }
+        obj = { "courseID": course_id, "instructorID": prof_id, "semester": semester, "calendarYear": int(x['calendarYear']) }
         database.insert_assignment(obj)
 
     # insert related instructors
@@ -51,6 +51,6 @@ def insert_scraped_data():
                 d = { "relatedInstructorID1": ids[i], "relatedInstructorID2": ids[j] }
                 database.insert_related_instructor(d)
 
-database.clear_all_tables()
 database.create_tables()
+database.clear_all_tables()
 insert_scraped_data()
