@@ -13,9 +13,6 @@ def create_tables():
         CREATE TABLE `instructor` (
             `instructorID` int(11) NOT NULL AUTO_INCREMENT,
             `name` varchar(255) NOT NULL,
-            `qualifications` varchar(255),
-            `atUIUC` BOOLEAN,
-            `semesterAvailable` varchar(255),
             PRIMARY KEY (`instructorID`)
         )
     '''
@@ -25,14 +22,8 @@ def create_tables():
     course_table_query = '''
         CREATE TABLE `course` (
             `courseID` int(11) NOT NULL AUTO_INCREMENT,
-            `crn` int(11) NOT NULL,
-            `semester` varchar(255),
-            `description` varchar(255),
-            `numStudents` int(11),
-            `dept` varchar(255),
-            `undergrad` BOOLEAN,
-            `year` int(11),
-            `online` BOOLEAN,
+            `courseNumber` int(11) NOT NULL,
+            `description` TEXT,
             `creditHours` int(11),
             PRIMARY KEY (`courseID`)
         )
@@ -46,6 +37,7 @@ def create_tables():
             `assignmentID` int(11) NOT NULL AUTO_INCREMENT,
             `instructorID` int(11) NOT NULL,
             `courseID` int(11) NOT NULL,
+            `semester` varchar(255),
             PRIMARY KEY (`assignmentID`),
             FOREIGN KEY (`instructorID`) REFERENCES `instructor` (`instructorID`) ON DELETE CASCADE,
             FOREIGN KEY (`courseID`) REFERENCES `course` (`courseID`) ON DELETE CASCADE
@@ -54,6 +46,41 @@ def create_tables():
 
     if 'assignment' not in existing_tables:
         cursor.execute(assignment_table_query)
+
+    related_instructor_query = '''
+        CREATE TABLE `related_instructor` (
+            `relatedID` int(11) NOT NULL AUTO_INCREMENT,
+            `relatedInstructorID1` int(11) NOT NULL,
+            `relatedInstructorID2` int(11) NOT NULL,
+            PRIMARY KEY (`relatedID`),
+            FOREIGN KEY (`relatedInstructorID1`) REFERENCES `instructor` (`instructorID`) ON DELETE CASCADE,
+            FOREIGN KEY (`relatedInstructorID2`) REFERENCES `instructor` (`instructorID`) ON DELETE CASCADE
+        )
+    '''
+
+    if 'related_instructor' not in existing_tables:
+        cursor.execute(related_instructor_query)
+
+    cursor.close()
+    connection.close()
+
+def clear_all_tables():
+    connection = connection_pool.get_connection()
+    cursor = connection.cursor()
+
+    query = 'DELETE FROM instructor'
+    cursor.execute(query)
+
+    query = 'DELETE FROM course'
+    cursor.execute(query)
+
+    query = 'DELETE FROM assignment'
+    cursor.execute(query)
+
+    query = 'DELETE FROM related_instructor'
+    cursor.execute(query)
+
+    connection.commit()
 
     cursor.close()
     connection.close()
@@ -82,13 +109,16 @@ def get_courses():
 def get_assignments():
     return get_from_table('assignment')
 
+def get_related_instructors():
+    return get_from_table('related_instructor')
+
 def insert_instructor(json):
     connection = connection_pool.get_connection()
     cursor = connection.cursor()
     
     query = f'''
         INSERT INTO instructor
-        VALUES(NULL, '{json['name']}', '{json['qualifications']}', {json['atUIUC']}, '{json['semesterAvailable']}')
+        VALUES(NULL, '{json['name']}')
     '''
     cursor.execute(query)
     connection.commit()
@@ -104,7 +134,7 @@ def insert_course(json):
     
     query = f'''
         INSERT INTO course
-        VALUES(NULL, {json['crn']}, '{json['semester']}', '{json['description']}', {json['numStudents']}, '{json['dept']}', {json['undergrad']}, {json['year']}, {json['online']}, {json['creditHours']})
+        VALUES(NULL, {json['courseNumber']}, '{json['description']}', {json['creditHours']})
     '''
     cursor.execute(query)
     connection.commit()
@@ -120,7 +150,23 @@ def insert_assignment(json):
     
     query = f'''
         INSERT INTO assignment
-        VALUES(NULL, {json['instructorID']}, {json['courseID']})
+        VALUES(NULL, {json['instructorID']}, {json['courseID']}, '{json['semester']}')
+    '''
+    cursor.execute(query)
+    connection.commit()
+    new_primary_key = cursor.lastrowid
+
+    cursor.close()
+    connection.close()
+    return new_primary_key
+
+def insert_related_instructor(json):
+    connection = connection_pool.get_connection()
+    cursor = connection.cursor()
+    
+    query = f'''
+        INSERT INTO related_instructor
+        VALUES(NULL, {json['relatedInstructorID1']}, {json['relatedInstructorID2']})
     '''
     cursor.execute(query)
     connection.commit()
@@ -187,13 +233,32 @@ def delete_assignment(assignment_id):
 
     return json_result
 
+def delete_related_instructor(related_id):
+    connection = connection_pool.get_connection()
+    cursor = connection.cursor()
+
+    select_query = f'SELECT * FROM related_instructor WHERE relatedID = {related_id} LIMIT 1'
+    cursor.execute(select_query)
+    result = cursor.fetchall()[0]
+    key_names = list(map(lambda x : x[0], cursor.description))
+    json_result = json.dumps(dict(zip(key_names, result)))
+
+    delete_query = f'DELETE FROM related_instructor WHERE relatedID = {related_id}'
+    cursor.execute(delete_query)
+    connection.commit()
+
+    cursor.close()
+    connection.close()
+
+    return json_result
+
 def update_instructor(obj):
     connection = connection_pool.get_connection()
     cursor = connection.cursor()
     
     update_query = f'''
         UPDATE instructor
-        SET name = '{obj['name']}', qualifications = '{obj['qualifications']}', atUIUC = {obj['atUIUC']}, semesterAvailable = '{obj['semesterAvailable']}'
+        SET name = '{obj['name']}'
         WHERE instructorID = {obj['instructorID']}
     '''
 
@@ -217,7 +282,7 @@ def update_course(obj):
     
     update_query = f'''
         UPDATE course
-        SET crn = {obj['crn']}, semester = '{obj['semester']}', description = '{obj['description']}', numStudents = {obj['numStudents']}, dept = '{obj['dept']}', undergrad = {obj['undergrad']}, year = {obj['year']}, online = {obj['online']}, creditHours = {obj['creditHours']}
+        SET courseNumber = {obj['courseNumber']}, description = '{obj['description']}', creditHours = {obj['creditHours']}
         WHERE courseID = {obj['courseID']}
     '''
 
@@ -241,7 +306,7 @@ def update_assignment(obj):
 
     update_query = f'''
         UPDATE assignment
-        SET instructorID = {obj['instructorID']}, courseID = {obj['courseID']}
+        SET instructorID = {obj['instructorID']}, courseID = {obj['courseID']}, semester = '{obj['semester']}'
         WHERE assignmentID = {obj['assignmentID']}
     '''
 
@@ -258,3 +323,44 @@ def update_assignment(obj):
     connection.close()
 
     return json_result
+
+def update_related_instructor(obj):
+    connection = connection_pool.get_connection()
+    cursor = connection.cursor()
+
+    update_query = f'''
+        UPDATE related_instructor
+        SET relatedInstructorID1 = {obj['relatedInstructorID1']}, relatedInstructorID2 = {obj['relatedInstructorID2']}
+        WHERE relatedID = {obj['relatedID']}
+    '''
+
+    cursor.execute(update_query)
+    connection.commit()
+
+    select_query = f'SELECT * FROM related_instructor WHERE relatedID = ' + str(obj['relatedID']) + ' LIMIT 1'
+    cursor.execute(select_query)
+    result = cursor.fetchall()[0]
+    key_names = list(map(lambda x : x[0], cursor.description))
+    json_result = json.dumps(dict(zip(key_names, result)))
+
+    cursor.close()
+    connection.close()
+
+    return json_result
+
+def get_all_instructors_teaching_course(course_id):
+    connection = connection_pool.get_connection()
+    cursor = connection.cursor()
+
+    select_query = f'''
+        SELECT instructorID FROM assignment WHERE courseID = {course_id}
+    '''
+
+    cursor.execute(select_query)
+
+    lst = list(set(list(map(lambda x: x[0], cursor.fetchall()))))
+
+    cursor.close()
+    connection.close()
+
+    return lst
