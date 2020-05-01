@@ -1,37 +1,37 @@
 import mysql.connector.pooling
 import json
 import spacy
-
-umbrella_to_course = {}
-
-sf_list = [421, 422, 426, 427, 428, 429, 476, 477, 492, 493, 494, 498, 522, 524, 526, 527, 528, 576, 598]
-umbrella_to_course["Software Foundations"] = sf_list
-
-amc_list = [413, 473, 475, 476, 477, 481, 482, 498, 571, 572, 573, 574, 575, 576, 579, 583, 584, 598]
-umbrella_to_course["Algorithms and Models of Computation"] = amc_list
-
-ibd_list = [410, 411, 412, 414, 440, 443, 445, 446, 447, 466, 467, 498, 510, 511, 512, 543, 544, 546, 548, 566, 576, 598]
-umbrella_to_course["Intelligence and Big Data"] = ibd_list
-
-hsi_list = [460, 461, 463, 465, 467, 468, 498, 563, 565]
-umbrella_to_course["Human and Social Impact"] = hsi_list
-
-media_list = [414, 418, 419, 445, 465, 467, 468, 498, 519, 565, 598]
-umbrella_to_course["Media"] = media_list
-
-sphpc_list = [419, 450, 457, 466, 482, 483, 484, 498, 519, 554, 555, 556, 558]
-umbrella_to_course["Scientific, Parallel, and High Performance Computing"] = sphpc_list
-
-dsns_list = [423, 424, 425, 431, 436, 438, 439, 460, 461, 463, 483, 484, 498, 523, 524, 525, 538, 563]
-umbrella_to_course["Distributed Systems, Networking, and Security"] = dsns_list
-
-mach_list = [423, 424, 426, 431, 433, 484, 498, 523, 526, 533, 536, 541, 584, 598]
-umbrella_to_course["Machines"] = mach_list
-
-unknown_list = [100, 125, 126, 173, 210, 225, 233, 241, 357, 361, 374, 242, 231, 232]
-umbrella_to_course["Unknown"] = unknown_list
-
-# ############################################################################################
+#
+# umbrella_to_course = {}
+#
+# sf_list = [421, 422, 426, 427, 428, 429, 476, 477, 492, 493, 494, 498, 522, 524, 526, 527, 528, 576, 598]
+# umbrella_to_course["Software Foundations"] = sf_list
+#
+# amc_list = [413, 473, 475, 476, 477, 481, 482, 498, 571, 572, 573, 574, 575, 576, 579, 583, 584, 598]
+# umbrella_to_course["Algorithms and Models of Computation"] = amc_list
+#
+# ibd_list = [410, 411, 412, 414, 440, 443, 445, 446, 447, 466, 467, 498, 510, 511, 512, 543, 544, 546, 548, 566, 576, 598]
+# umbrella_to_course["Intelligence and Big Data"] = ibd_list
+#
+# hsi_list = [460, 461, 463, 465, 467, 468, 498, 563, 565]
+# umbrella_to_course["Human and Social Impact"] = hsi_list
+#
+# media_list = [414, 418, 419, 445, 465, 467, 468, 498, 519, 565, 598]
+# umbrella_to_course["Media"] = media_list
+#
+# sphpc_list = [419, 450, 457, 466, 482, 483, 484, 498, 519, 554, 555, 556, 558]
+# umbrella_to_course["Scientific, Parallel, and High Performance Computing"] = sphpc_list
+#
+# dsns_list = [423, 424, 425, 431, 436, 438, 439, 460, 461, 463, 483, 484, 498, 523, 524, 525, 538, 563]
+# umbrella_to_course["Distributed Systems, Networking, and Security"] = dsns_list
+#
+# mach_list = [423, 424, 426, 431, 433, 484, 498, 523, 526, 533, 536, 541, 584, 598]
+# umbrella_to_course["Machines"] = mach_list
+#
+# unknown_list = [100, 125, 126, 173, 210, 225, 233, 241, 357, 361, 374, 242, 231, 232]
+# umbrella_to_course["Unknown"] = unknown_list
+#
+# # ############################################################################################
 
 course_to_umbrella = {}
 
@@ -159,7 +159,6 @@ def check_same_umbrella(c1, c2):
 
 connection_pool = mysql.connector.pooling.MySQLConnectionPool(user='root', host='localhost'
                                                               , database='teaching_assignments')
-rec_dict = {}
 prereq_dict = {}
 
 
@@ -226,8 +225,9 @@ def get_taught_courses(name):
     return results
 
 
-def update_dict():
-    global rec_dict
+def get_prof_dict(taught_classes):
+    if not taught_classes:
+        return None
     connection = connection_pool.get_connection()
     cursor = connection.cursor()
     query = """
@@ -237,89 +237,119 @@ def update_dict():
     cursor.execute(query)
 
     results = cursor.fetchall()
-
+    rec_dict = {}
     # make edge list
     nlp = spacy.load("en_core_web_lg")
-    for n1 in range(len(results)):
-        for n2 in range(n1+1, len(results)):
-            doc1 = nlp(results[n1][1])
-            doc2 = nlp(results[n2][1])
-            sim_score = doc1.similarity(doc2)
+    for n1 in results:
+        if n1[0] in taught_classes:
+            for n2 in results:
+                if n1[0] != n2[0]:  # judge prereq
+                    if n2[0] in prereq_dict:
+                        prereq = prereq_dict[n2[0]]
+                    else:
+                        prereq = []
+                is_umbrella = check_same_umbrella(str(n1[0]), str(n2[0]))  # judge umbrella
 
-            # judge prereq
-            if str(results[n1][0]) in prereq_dict:
-                prereq1 = prereq_dict[str(results[n1][0])]  # list of str of prereq
-            else:
-                prereq1 = []
-            if str(results[n2][0]) in prereq_dict:
-                prereq2 = prereq_dict[str(results[n2][0])]
-            else:
-                prereq2 = []
-
-            # check umbrella
-            is_umbrella = check_same_umbrella(str(results[n1][0]), str(results[n2][0]))
-            if str(results[n2][0]) in prereq1:  # n2 is prereq of n1
-                if is_umbrella:
-                    score = (1/3) * sim_score + (2/3)
+                sim_score = nlp(n1[1]).similarity(nlp(n2[1]))
+                if str(n1[0]) in prereq:  # n1 is prereq of n2
+                    if is_umbrella:
+                        score = (1/3) * sim_score + (2/3)
+                    else:
+                        score = 0.5 * sim_score + 0.5
                 else:
-                    score = 0.5 * sim_score + 0.5
-            elif str(results[n1][0]) in prereq2:  # n1 is prereq of n2
-                if is_umbrella:
-                    score = (1/3) * sim_score + (2/3)
-                else:
-                    score = 0.5 * sim_score + 0.5
-            else:
-                score = sim_score
+                    score = sim_score
 
-            if results[n1][0] not in rec_dict:
-                rec_dict.update({results[n1][0]: [(results[n2][0], score)]})
-            else:
-                rec_dict[results[n1][0]].append((results[n2][0], score))
-            if results[n2][0] not in rec_dict:
-                rec_dict.update({results[n2][0]: [(results[n1][0], score)]})
-            else:
-                rec_dict[results[n2][0]].append((results[n1][0], score))
+                if n1[0] not in rec_dict:
+                    rec_dict.update({n1[0]: [(n2[0], score)]})
+                else:
+                    rec_dict[n1[0]].append((n2[0], score))
+
+
+                # # judge prereq
+                # if str(results[n1][0]) in prereq_dict:
+                #     prereq1 = prereq_dict[str(results[n1][0])]  # list of str of prereq
+                # else:
+                #     prereq1 = []
+                # if str(results[n2][0]) in prereq_dict:
+                #     prereq2 = prereq_dict[str(results[n2][0])]
+                # else:
+                #     prereq2 = []
+                #
+                # # check umbrella
+                # is_umbrella = check_same_umbrella(str(results[n1][0]), str(results[n2][0]))
+                # if str(results[n2][0]) in prereq1:  # n2 is prereq of n1
+                #     if is_umbrella:
+                #         score = (1/3) * sim_score + (2/3)
+                #     else:
+                #         score = 0.5 * sim_score + 0.5
+                # elif str(results[n1][0]) in prereq2:  # n1 is prereq of n2
+                #     if is_umbrella:
+                #         score = (1/3) * sim_score + (2/3)
+                #     else:
+                #         score = 0.5 * sim_score + 0.5
+                # else:
+                #     score = sim_score
+                #
+                # if results[n1][0] not in rec_dict:
+                #     rec_dict.update({results[n1][0]: [(results[n2][0], score)]})
+                # else:
+                #     rec_dict[results[n1][0]].append((results[n2][0], score))
+                # if results[n2][0] not in rec_dict:
+                #     rec_dict.update({results[n2][0]: [(results[n1][0], score)]})
+                # else:
+                #     rec_dict[results[n2][0]].append((results[n1][0], score))
 
     cursor.close()
     connection.close()
+    return rec_dict
 
 
 def recommend_course_for_prof(name):
     print(name)
-    global rec_dict
     taught_classes = get_taught_courses(name)
+    rec_dict = get_prof_dict(taught_classes)
     candidates = []
     if taught_classes:
         for t in taught_classes:
-            candidates.append(max(rec_dict[t], key=lambda x: x[1]))
+            candidates.append(max((i for i in rec_dict[t] if i[0] != t), key=lambda x: x[1]))
 
-    print(candidates)
     candidates.sort(key=lambda x: x[1], reverse=True)
-    print(candidates[:3])
+    print(candidates)
 
-    connection = connection_pool.get_connection()
-    cursor = connection.cursor()
-    query = """
-            SELECT *
-            FROM course
-            WHERE courseNumber={0} OR courseNumber={1} OR courseNumber={2}
-        """
-    query = query.format(candidates[0][0], candidates[1][0], candidates[2][0])
-    print(query)
-    cursor.execute(query)
+    if candidates:
+        connection = connection_pool.get_connection()
+        cursor = connection.cursor()
+        query = """
+                SELECT *
+                FROM course
+                WHERE courseNumber={0} 
+            """
+        query = query.format(candidates[0][0])
+        cursor.execute(query)
 
-    results = cursor.fetchall()
-    key_names = list(map(lambda x: x[0], cursor.description))
-    keyed_results = list(map(lambda x: dict(zip(key_names, x)), results))
-    json_string = json.dumps(keyed_results)
+        results = cursor.fetchall()
+        key_names = list(map(lambda x: x[0], cursor.description))
+        keyed_results = list(map(lambda x: dict(zip(key_names, x)), results))
+        json_string = json.dumps(keyed_results)
 
-    cursor.close()
-    connection.close()
-    print(json_string)
-    return json_string
+        cursor.close()
+        connection.close()
+        print(json_string)
+        return json_string
+    else:
+        print("WTF")
+        return None
+
 
 
 if __name__ == '__main__':
     update_prereq()
-    update_dict()
     recommend_course_for_prof("Fagen-Ulmschneider, W")
+    recommend_course_for_prof("Schwing, A")
+    recommend_course_for_prof("Zhou, Y")
+    recommend_course_for_prof("Nahrstedt, K")
+    recommend_course_for_prof("Charalambides, M")
+    recommend_course_for_prof("Fletcher, C")
+
+
+
