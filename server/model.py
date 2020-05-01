@@ -219,7 +219,6 @@ def get_taught_courses(name):
     cursor.execute(query)
 
     results = list(set(i[0] for i in cursor.fetchall()))
-    print(results)
     cursor.close()
     connection.close()
     return results
@@ -314,7 +313,6 @@ def recommend_course_for_prof(name):
             candidates.append(max((i for i in rec_dict[t] if i[0] != t), key=lambda x: x[1]))
 
     candidates.sort(key=lambda x: x[1], reverse=True)
-    print(candidates)
 
     if candidates:
         connection = connection_pool.get_connection()
