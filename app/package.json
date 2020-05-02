@@ -9,7 +9,8 @@
     "react": "^16.13.0",
     "react-crud-table": "0.0.8",
     "react-dom": "^16.13.0",
-    "react-scripts": "3.4.0"
+    "react-scripts": "3.4.0",
+    "react-select": "^2.4.4"
   },
   "scripts": {
     "start": "react-scripts start",
