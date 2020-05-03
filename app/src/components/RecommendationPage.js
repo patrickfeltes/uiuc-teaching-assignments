@@ -1,23 +1,6 @@
 import React, { Component } from 'react';
-import AsyncSelect from 'react-select';
 import Select from 'react-select';
-
-// const loadOptions = (inputValue, callback) => {
-//     fetch('/instructor').then(response => {
-//         console.log(response);
-//         var instructors = response.json();
-//         console.log(instructors);
-//         var mappedInstructors = instructors.map((value) => JSON.parse('{ "value": value["name"], label: value["instructorID"] }'));
-//         console.log(mappedInstructors);
-//         callback(mappedInstructors);
-//     });
-// };
-
-const loadOptions2 = (inputValue, callback) => {
-    setTimeout(callback([{ label: "label", value: 1}]), 1000);
-};
-
-const options = [{ label: "label", value: 1}];
+const JsonTable = require('ts-react-json-table');
 
 export default class RecommendationPage extends Component {
 
@@ -25,14 +8,26 @@ export default class RecommendationPage extends Component {
         super(props);
 
         this.state = {
-            options: null
+            options: null,
+            jsonData: null
         };
     }
+
+    handleChange = (newValue) => {
+        const instructorID = newValue["value"];
+
+        fetch('/instructor').then(response => {
+            response.json().then(data => {
+                this.setState({ jsonData: data });
+            });
+        });
+
+        this.setState({ instructorID: newValue["value"] });
+    };
 
     componentWillMount() {
         fetch('/instructor').then(response => {
             response.json().then(data => {
-                console.log(data);
                 var mappedData = data.map((val) => { return { label: val["name"], value: val["instructorID"]} });
                 this.setState({ options: mappedData });
             });
@@ -40,10 +35,12 @@ export default class RecommendationPage extends Component {
     }
 
     render() {
-        console.log("render")
         return (
             <div className="container">
-            {this.state.options ? <Select options={this.state.options} /> : <div></div>}
+                {this.state.options ? 
+                <Select options={this.state.options} onChange={this.handleChange} /> 
+                : <div></div>}
+                {this.state.jsonData ? <JsonTable rows={this.state.jsonData} /> : <div />}
             </div>
         );
     }

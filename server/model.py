@@ -141,10 +141,6 @@ course_to_umbrella["533"] = ["Machines"]
 course_to_umbrella["536"] = ["Machines"]
 course_to_umbrella["541"] = ["Machines"]
 
-<<<<<<< HEAD
-nlp = spacy.load("en_core_web_lg")
-=======
->>>>>>> ece79bde655e7902a807455a179e66dfa1af22f0
 
 def check_same_umbrella(c1, c2):
     if c1 not in course_to_umbrella or c2 not in course_to_umbrella:
@@ -209,14 +205,6 @@ def get_taught_courses(name):
     connection = connection_pool.get_connection()
     cursor = connection.cursor()
     query = """
-<<<<<<< HEAD
-        SELECT c.courseNumber, c.description
-        FROM instructor i 
-        NATURAL JOIN 
-        assignment
-        NATURAL JOIN
-        course c
-=======
         SELECT c.courseNumber
         FROM instructor i 
         INNER JOIN 
@@ -225,25 +213,12 @@ def get_taught_courses(name):
         INNER JOIN
         course c
         ON c.courseID = a.courseID
->>>>>>> ece79bde655e7902a807455a179e66dfa1af22f0
         WHERE name = '{0}'
     """
     query = query.format(name)
     cursor.execute(query)
 
-<<<<<<< HEAD
-    courses = set()
-    results = []
-    for result in cursor.fetchall():
-        if result[0] not in courses:
-            courses.add(result[0])
-            results.append(result)
-
-
-    print(results)
-=======
     results = list(set(i[0] for i in cursor.fetchall()))
->>>>>>> ece79bde655e7902a807455a179e66dfa1af22f0
     cursor.close()
     connection.close()
     return results
@@ -254,11 +229,7 @@ def get_prof_dict(taught_classes):
         return None
     connection = connection_pool.get_connection()
     cursor = connection.cursor()
-<<<<<<< HEAD
-    query = f"""
-=======
     query = """
->>>>>>> ece79bde655e7902a807455a179e66dfa1af22f0
         SELECT courseNumber, description
         FROM course
     """
@@ -267,68 +238,6 @@ def get_prof_dict(taught_classes):
     results = cursor.fetchall()
     rec_dict = {}
     # make edge list
-<<<<<<< HEAD
-
-    for n1 in taught_classes:
-        for n2 in results:
-            if n1[0] != n2[0]:  # judge prereq
-                if n2[0] in prereq_dict:
-                    prereq = prereq_dict[n2[0]]
-                else:
-                    prereq = []
-            else:
-                prereq = []
-            is_umbrella = check_same_umbrella(str(n1[0]), str(n2[0]))  # judge umbrella
-
-            sim_score = nlp(n1[1]).similarity(nlp(n2[1]))
-            if str(n1[0]) in prereq:  # n1 is prereq of n2
-                if is_umbrella:
-                    score = (1/3) * sim_score + (2/3)
-                else:
-                    score = 0.5 * sim_score + 0.5
-            else:
-                score = sim_score
-
-            if n1[0] not in rec_dict:
-                rec_dict.update({n1[0]: [(n2[0], score)]})
-            else:
-                rec_dict[n1[0]].append((n2[0], score))
-
-
-            # # judge prereq
-            # if str(results[n1][0]) in prereq_dict:
-            #     prereq1 = prereq_dict[str(results[n1][0])]  # list of str of prereq
-            # else:
-            #     prereq1 = []
-            # if str(results[n2][0]) in prereq_dict:
-            #     prereq2 = prereq_dict[str(results[n2][0])]
-            # else:
-            #     prereq2 = []
-            #
-            # # check umbrella
-            # is_umbrella = check_same_umbrella(str(results[n1][0]), str(results[n2][0]))
-            # if str(results[n2][0]) in prereq1:  # n2 is prereq of n1
-            #     if is_umbrella:
-            #         score = (1/3) * sim_score + (2/3)
-            #     else:
-            #         score = 0.5 * sim_score + 0.5
-            # elif str(results[n1][0]) in prereq2:  # n1 is prereq of n2
-            #     if is_umbrella:
-            #         score = (1/3) * sim_score + (2/3)
-            #     else:
-            #         score = 0.5 * sim_score + 0.5
-            # else:
-            #     score = sim_score
-            #
-            # if results[n1][0] not in rec_dict:
-            #     rec_dict.update({results[n1][0]: [(results[n2][0], score)]})
-            # else:
-            #     rec_dict[results[n1][0]].append((results[n2][0], score))
-            # if results[n2][0] not in rec_dict:
-            #     rec_dict.update({results[n2][0]: [(results[n1][0], score)]})
-            # else:
-            #     rec_dict[results[n2][0]].append((results[n1][0], score))
-=======
     nlp = spacy.load("en_core_web_lg")
     for n1 in results:
         if n1[0] in taught_classes:
@@ -388,7 +297,6 @@ def get_prof_dict(taught_classes):
                 #     rec_dict.update({results[n2][0]: [(results[n1][0], score)]})
                 # else:
                 #     rec_dict[results[n2][0]].append((results[n1][0], score))
->>>>>>> ece79bde655e7902a807455a179e66dfa1af22f0
 
     cursor.close()
     connection.close()
@@ -398,19 +306,11 @@ def get_prof_dict(taught_classes):
 def recommend_course_for_prof(name):
     print(name)
     taught_classes = get_taught_courses(name)
-<<<<<<< HEAD
-    print('got taught classes')
-=======
->>>>>>> ece79bde655e7902a807455a179e66dfa1af22f0
     rec_dict = get_prof_dict(taught_classes)
     candidates = []
     if taught_classes:
         for t in taught_classes:
-<<<<<<< HEAD
-            candidates.append(max((i for i in rec_dict[t[0]] if i[0] != t[0]), key=lambda x: x[1]))
-=======
             candidates.append(max((i for i in rec_dict[t] if i[0] != t), key=lambda x: x[1]))
->>>>>>> ece79bde655e7902a807455a179e66dfa1af22f0
 
     candidates.sort(key=lambda x: x[1], reverse=True)
 
@@ -441,18 +341,6 @@ def recommend_course_for_prof(name):
 
 
 if __name__ == '__main__':
-<<<<<<< HEAD
-    print("starting update prereq")
-    update_prereq()
-    print("ending update prereq")
-    recommend_course_for_prof("Angrave, L")
-    recommend_course_for_prof("Chekuri, C")
-    # recommend_course_for_prof("Schwing, A")
-    # recommend_course_for_prof("Zhou, Y")
-    # recommend_course_for_prof("Nahrstedt, K")
-    # recommend_course_for_prof("Charalambides, M")
-    # recommend_course_for_prof("Fletcher, C")
-=======
     update_prereq()
     recommend_course_for_prof("Fagen-Ulmschneider, W")
     recommend_course_for_prof("Schwing, A")
@@ -460,7 +348,6 @@ if __name__ == '__main__':
     recommend_course_for_prof("Nahrstedt, K")
     recommend_course_for_prof("Charalambides, M")
     recommend_course_for_prof("Fletcher, C")
->>>>>>> ece79bde655e7902a807455a179e66dfa1af22f0
 
 
 
