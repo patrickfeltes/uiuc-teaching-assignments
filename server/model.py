@@ -200,6 +200,9 @@ def update_prereq():
                         prereq_list.append(prereq)
                         prereq_dict[course] = prereq_list
 
+    cursor.close()
+    connection.close()
+
 
 def get_taught_courses(name):
     connection = connection_pool.get_connection()
@@ -263,41 +266,6 @@ def get_prof_dict(taught_classes):
                 else:
                     rec_dict[n1[0]].append((n2[0], score))
 
-
-                # # judge prereq
-                # if str(results[n1][0]) in prereq_dict:
-                #     prereq1 = prereq_dict[str(results[n1][0])]  # list of str of prereq
-                # else:
-                #     prereq1 = []
-                # if str(results[n2][0]) in prereq_dict:
-                #     prereq2 = prereq_dict[str(results[n2][0])]
-                # else:
-                #     prereq2 = []
-                #
-                # # check umbrella
-                # is_umbrella = check_same_umbrella(str(results[n1][0]), str(results[n2][0]))
-                # if str(results[n2][0]) in prereq1:  # n2 is prereq of n1
-                #     if is_umbrella:
-                #         score = (1/3) * sim_score + (2/3)
-                #     else:
-                #         score = 0.5 * sim_score + 0.5
-                # elif str(results[n1][0]) in prereq2:  # n1 is prereq of n2
-                #     if is_umbrella:
-                #         score = (1/3) * sim_score + (2/3)
-                #     else:
-                #         score = 0.5 * sim_score + 0.5
-                # else:
-                #     score = sim_score
-                #
-                # if results[n1][0] not in rec_dict:
-                #     rec_dict.update({results[n1][0]: [(results[n2][0], score)]})
-                # else:
-                #     rec_dict[results[n1][0]].append((results[n2][0], score))
-                # if results[n2][0] not in rec_dict:
-                #     rec_dict.update({results[n2][0]: [(results[n1][0], score)]})
-                # else:
-                #     rec_dict[results[n2][0]].append((results[n1][0], score))
-
     cursor.close()
     connection.close()
     return rec_dict
@@ -339,15 +307,73 @@ def recommend_course_for_prof(name):
         return None
 
 
-
-if __name__ == '__main__':
+def compute_similarities():
     update_prereq()
-    recommend_course_for_prof("Fagen-Ulmschneider, W")
-    recommend_course_for_prof("Schwing, A")
-    recommend_course_for_prof("Zhou, Y")
-    recommend_course_for_prof("Nahrstedt, K")
-    recommend_course_for_prof("Charalambides, M")
-    recommend_course_for_prof("Fletcher, C")
+
+    connection = connection_pool.get_connection()
+    cursor = connection.cursor()
+    query = """
+        SELECT courseID, courseNumber, description
+        FROM course
+    """
+    cursor.execute(query)
+
+    results = cursor.fetchall()
+    connection.close()
+    cursor.close()
+
+    nlp = spacy.load("en_core_web_lg")
+    nlp_arr = []
+    for i in range(len(results)):
+        nlp_arr.append(nlp(results[i][2]))
+
+
+    similarities = []
+    for i in range(len(results)):
+        course1 = results[i]
+        for j in range(i + 1, len(results)):
+            course2 = results[j]
+            
+            # if different course number
+            if course1[1] != course2[1] and course2[1] in prereq_dict:
+                prereq = prereq_dict[course2[1]]
+            else:
+                prereq = []
+
+            is_umbrella = check_same_umbrella(str(course1[1]), str(course2[1]))
+
+            # check similarity of course descriptions
+            sim_score = nlp_arr[i].similarity(nlp_arr[j])
+
+            if str(course1[1]) in prereq:
+                # course 1 is a preqreq of course2
+                if is_umbrella:
+                    score = (1/3) * sim_score + (2/3)
+                else:
+                    score = 0.5 * sim_score + (2/3)
+            else:
+                score = sim_score
+
+            similarities.append((course1[0], course2[0], score))
+    
+    connection = connection_pool.get_connection()
+    cursor = connection.cursor()
+
+    similarities_string = ','.join(map(repr, similarities)) + ';'
+    
+    delete_query = '''
+        DELETE FROM course_similarity;
+    '''
+    cursor.execute(delete_query)
+
+    insert_query = f'''
+        INSERT INTO course_similarity VALUE {similarities_string}
+    '''
+    cursor.execute(insert_query)
+
+    connection.commit()
+    cursor.close()
+    connection.close()
 
 
 

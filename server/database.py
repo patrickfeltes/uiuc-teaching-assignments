@@ -62,6 +62,18 @@ def create_tables():
     if 'related_instructor' not in existing_tables:
         cursor.execute(related_instructor_query)
 
+    course_similarity_query = '''
+        CREATE TABLE `course_similarity` (
+            `courseID1` int(11) NOT NULL,
+            `courseID2` int(11) NOT NULL,
+            `similarityScore` DOUBLE NOT NULL,
+            PRIMARY KEY (`courseID1`, `courseID2`)
+        )
+    '''
+
+    if 'course_similarity' not in existing_tables:
+        cursor.execute(course_similarity_query)
+
     cursor.close()
     connection.close()
 

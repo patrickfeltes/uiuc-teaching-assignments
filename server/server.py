@@ -1,6 +1,7 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 import database
 import json
+import model
 
 app = Flask(__name__)
 
@@ -87,6 +88,12 @@ def update_assignment():
 def update_related_instructor():
     json = request.json
     return database.update_related_instructor(json)
+
+@app.route('/update_similarities', methods = ['GET'])
+def update_similarities():
+    model.compute_similarities()
+    resp = jsonify(success=True)
+    return resp
 
 if __name__ == '__main__':
     app.run(debug = False)

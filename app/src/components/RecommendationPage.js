@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import Select from 'react-select';
+import ButtonLoader from './ButtonLoader';
 const JsonTable = require('ts-react-json-table');
 
 export default class RecommendationPage extends Component {
@@ -42,6 +43,7 @@ export default class RecommendationPage extends Component {
     render() {
         return (
             <div className="container">
+                <ButtonLoader />
                 {this.state.options ? <Select options={this.state.options} onChange={this.handleChange} /> : <div></div>}
                 <h1>Taught Courses</h1>
                 {this.state.taughtCourses ? <JsonTable rows={this.state.taughtCourses} /> : <div />}
