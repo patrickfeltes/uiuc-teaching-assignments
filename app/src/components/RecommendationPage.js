@@ -9,20 +9,25 @@ export default class RecommendationPage extends Component {
 
         this.state = {
             options: null,
-            jsonData: null
+            taughtCourses: null,
+            relatedInstructors: null
         };
     }
 
     handleChange = (newValue) => {
         const instructorID = newValue["value"];
 
-        fetch('/instructor').then(response => {
+        fetch('/course?instructor_id=' + instructorID).then(response => {
             response.json().then(data => {
-                this.setState({ jsonData: data });
+                this.setState({ taughtCourses: data });
             });
         });
 
-        this.setState({ instructorID: newValue["value"] });
+        fetch('/related_instructor?instructor_id=' + instructorID).then(response => {
+            response.json().then(data => {
+                this.setState({ relatedInstructors: data });
+            });
+        });
     };
 
     componentWillMount() {
@@ -37,10 +42,11 @@ export default class RecommendationPage extends Component {
     render() {
         return (
             <div className="container">
-                {this.state.options ? 
-                <Select options={this.state.options} onChange={this.handleChange} /> 
-                : <div></div>}
-                {this.state.jsonData ? <JsonTable rows={this.state.jsonData} /> : <div />}
+                {this.state.options ? <Select options={this.state.options} onChange={this.handleChange} /> : <div></div>}
+                <h1>Taught Courses</h1>
+                {this.state.taughtCourses ? <JsonTable rows={this.state.taughtCourses} /> : <div />}
+                <h1>Instructors who also taught these courses</h1>
+                {this.state.relatedInstructors ? <JsonTable rows={this.state.relatedInstructors} /> : <div />}
             </div>
         );
     }

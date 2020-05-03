@@ -10,7 +10,11 @@ def get_instructors():
 
 @app.route('/course', methods = ['GET'])
 def get_courses():
-    return database.get_courses()
+    if request.args.get('instructor_id') is not None:
+        instructor_id = request.args.get('instructor_id')
+        return database.get_courses_taught_by_instructor(instructor_id)
+    else:
+        return database.get_courses()
 
 @app.route('/assignment', methods = ['GET'])
 def get_assignments():
@@ -18,7 +22,11 @@ def get_assignments():
 
 @app.route('/related_instructor', methods = ['GET'])
 def get_related_instructors():
-    return database.get_related_instructors()    
+    if request.args.get('instructor_id') is not None:
+        instructor_id = request.args.get('instructor_id')
+        return database.get_instructors_related_to_this_one(instructor_id)
+    else:
+        return database.get_related_instructors()    
 
 @app.route('/instructor', methods = ['POST'])
 def insert_instructor():

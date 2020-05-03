@@ -365,3 +365,43 @@ def get_all_instructors_teaching_course(course_id):
     connection.close()
 
     return lst
+
+def get_courses_taught_by_instructor(instructor_id):
+    query = f'''
+        SELECT DISTINCT courseID, courseNumber, description, creditHours
+        FROM 
+        (SELECT * FROM assignment WHERE instructorID = {instructor_id}) AS assignment_of_instructor
+        NATURAL JOIN
+        course
+    '''
+    return run_select_query(query)
+
+def get_instructors_related_to_this_one(instructor_id):
+    query = f'''
+        SELECT DISTINCT instructorID, name
+        FROM
+        (
+            (SELECT relatedInstructorID1 AS instructorID FROM related_instructor WHERE relatedInstructorID2 = {instructor_id})
+            UNION
+            (SELECT relatedInstructorID2 AS instructorID FROM related_instructor WHERE relatedInstructorID1 = {instructor_id})
+        ) AS related_ids
+        NATURAL JOIN
+        instructor
+    '''
+    return run_select_query(query)
+
+def run_select_query(query):
+    connection = connection_pool.get_connection()
+    cursor = connection.cursor()
+
+    cursor.execute(query)
+
+    results = cursor.fetchall()
+    key_names = list(map(lambda x : x[0], cursor.description))
+    keyed_results = list(map(lambda x : dict(zip(key_names, x)), results))
+    json_string = json.dumps(keyed_results)
+
+    cursor.close()
+    connection.close()
+
+    return json_string
