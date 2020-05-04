@@ -385,6 +385,7 @@ def get_courses_taught_by_instructor(instructor_id):
         (SELECT * FROM assignment WHERE instructorID = {instructor_id}) AS assignment_of_instructor
         NATURAL JOIN
         course
+        ORDER BY courseID
     '''
     return run_select_query(query)
 
@@ -394,6 +395,39 @@ def get_attributes_of_instructor(instructor_id):
         FROM instructor
         WHERE instructorID = {instructor_id}
 
+    '''
+    return run_select_query(query)
+
+def get_attributes_of_course(course_id):
+    query = f'''
+        SELECT courseID, courseNumber, description, creditHours
+        FROM course
+        WHERE courseID = {course_id}
+
+    '''
+    return run_select_query(query)
+
+def get_instructors_who_taught_this_course(course_id):
+    query = f'''
+        SELECT DISTINCT instructorID, name
+        FROM
+        (SELECT * FROM assignment WHERE courseID = {course_id}) AS assignment_of_course
+        NATURAL JOIN
+        instructor
+        ORDER BY instructorID
+    '''
+    return run_select_query(query)
+
+def get_courses_related_to_this_one(course_id):
+    query = f'''
+        SELECT DISTINCT courseID, courseNumber, description, creditHours
+        FROM
+        (SELECT * FROM assignment WHERE instructorID IN (SELECT instructorID
+        FROM
+        (SELECT * FROM assignment WHERE courseID = {course_id}) AS assignment_of_course
+        NATURAL JOIN
+        instructor)) AS assignment_of_instructors NATURAL JOIN course
+        ORDER BY courseID
     '''
     return run_select_query(query)
 
@@ -408,6 +442,7 @@ def get_instructors_related_to_this_one(instructor_id):
         ) AS related_ids
         NATURAL JOIN
         instructor
+        ORDER BY instructorID
     '''
     return run_select_query(query)
 

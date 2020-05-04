@@ -5,9 +5,7 @@ import model
 
 app = Flask(__name__)
 
-# @app.route('/instructor', methods = ['GET'])
-# def get_instructors():
-#     return database.get_instructors()
+
 
 @app.route('/instructor', methods = ['GET'])
 def get_instructors():
@@ -25,13 +23,6 @@ def get_courses():
     else:
         return database.get_courses()
 
-# @app.route('/attributes_of_instructor', methods = ['GET'])
-# def get_attributes_of_instructor():
-#     if request.args.get('instructor_id') is not None:
-#         instructor_id = request.args.get('instructor_id')
-#         return database.get_attributes_of_instructor(instructor_id)
-#     else:
-#         return database.get_instructors()
 
 @app.route('/assignment', methods = ['GET'])
 def get_assignments():
@@ -110,6 +101,22 @@ def update_similarities():
     model.compute_similarities()
     resp = jsonify(success=True)
     return resp
+
+@app.route('/attributes_of_course', methods = ['GET'])
+def attributes_of_course():
+    course_id = request.args.get('course_id')
+    return database.get_attributes_of_course(course_id)
+
+@app.route('/get_instructors_who_taught_this_course', methods = ['GET'])
+def instructors_who_taught_this_course():
+    course_id = request.args.get('course_id')
+    return database.get_instructors_who_taught_this_course(course_id)
+
+@app.route('/get_courses_related_to_this_one', methods = ['GET'])
+def courses_related_to_this_one():
+    course_id = request.args.get('course_id')
+    return database.get_courses_related_to_this_one(course_id)
+
 
 if __name__ == '__main__':
     app.run(debug = False)
