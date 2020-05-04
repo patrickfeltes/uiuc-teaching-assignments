@@ -10,6 +10,7 @@ export default class RecommendationPage extends Component {
 
         this.state = {
             options: null,
+            attributes: null,
             taughtCourses: null,
             relatedInstructors: null
         };
@@ -29,6 +30,12 @@ export default class RecommendationPage extends Component {
                 this.setState({ relatedInstructors: data });
             });
         });
+
+        fetch('/instructor?instructor_id=' + instructorID).then(response => {
+            response.json().then(data => {
+                this.setState({ attributes: data });
+            });
+        });
     };
 
     componentWillMount() {
@@ -45,6 +52,8 @@ export default class RecommendationPage extends Component {
             <div className="container">
                 <ButtonLoader />
                 {this.state.options ? <Select options={this.state.options} onChange={this.handleChange} /> : <div></div>}
+                <h1>Professor Information</h1>
+                {this.state.attributes ? <JsonTable rows={this.state.attributes} /> : <div />}
                 <h1>Taught Courses</h1>
                 {this.state.taughtCourses ? <JsonTable rows={this.state.taughtCourses} /> : <div />}
                 <h1>Instructors who also taught these courses</h1>

@@ -103,7 +103,7 @@ def get_from_table(table_name):
     cursor = connection.cursor()
     query = f'SELECT * FROM {table_name}'
     cursor.execute(query)
-    
+
     results = cursor.fetchall()
     key_names = list(map(lambda x : x[0], cursor.description))
     keyed_results = list(map(lambda x : dict(zip(key_names, x)), results))
@@ -128,7 +128,7 @@ def get_related_instructors():
 def insert_instructor(json):
     connection = connection_pool.get_connection()
     cursor = connection.cursor()
-    
+
     query = f'''
         INSERT INTO instructor
         VALUES(NULL, '{json['name']}')
@@ -144,7 +144,7 @@ def insert_instructor(json):
 def insert_course(json):
     connection = connection_pool.get_connection()
     cursor = connection.cursor()
-    
+
     query = f'''
         INSERT INTO course
         VALUES(NULL, {json['courseNumber']}, '{json['description']}', {json['creditHours']})
@@ -160,7 +160,7 @@ def insert_course(json):
 def insert_assignment(json):
     connection = connection_pool.get_connection()
     cursor = connection.cursor()
-    
+
     query = f'''
         INSERT INTO assignment
         VALUES(NULL, {json['instructorID']}, {json['courseID']}, '{json['semester']}', {json['calendarYear']})
@@ -176,7 +176,7 @@ def insert_assignment(json):
 def insert_related_instructor(json):
     connection = connection_pool.get_connection()
     cursor = connection.cursor()
-    
+
     query = f'''
         INSERT INTO related_instructor
         VALUES(NULL, {json['relatedInstructorID1']}, {json['relatedInstructorID2']})
@@ -268,7 +268,7 @@ def delete_related_instructor(related_id):
 def update_instructor(obj):
     connection = connection_pool.get_connection()
     cursor = connection.cursor()
-    
+
     update_query = f'''
         UPDATE instructor
         SET name = '{obj['name']}'
@@ -292,7 +292,7 @@ def update_instructor(obj):
 def update_course(obj):
     connection = connection_pool.get_connection()
     cursor = connection.cursor()
-    
+
     update_query = f'''
         UPDATE course
         SET courseNumber = {obj['courseNumber']}, description = '{obj['description']}', creditHours = {obj['creditHours']}
@@ -381,10 +381,19 @@ def get_all_instructors_teaching_course(course_id):
 def get_courses_taught_by_instructor(instructor_id):
     query = f'''
         SELECT DISTINCT courseID, courseNumber, description, creditHours
-        FROM 
+        FROM
         (SELECT * FROM assignment WHERE instructorID = {instructor_id}) AS assignment_of_instructor
         NATURAL JOIN
         course
+    '''
+    return run_select_query(query)
+
+def get_attributes_of_instructor(instructor_id):
+    query = f'''
+        SELECT instructorID, name
+        FROM instructor
+        WHERE instructorID = {instructor_id}
+
     '''
     return run_select_query(query)
 
