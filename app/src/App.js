@@ -6,6 +6,8 @@ import RelatedInstructorTable from './components/RelatedInstructorTable';
 import Tabs from './components/Tabs';
 
 import './index.css'
+import RecommendationPage from './components/RecommendationPage';
+import CourseSearchPage from './components/CourseSearchPage';
 
 const App = () => (
   <div>
@@ -17,15 +19,18 @@ const App = () => (
       <div label="Courses">
         <CourseTable />
       </div>
-    </Tabs>
 
-    
-    {/* <AssignmentTable /> */}
-    
-    {/* <RelatedInstructorTable /> */}
+      <div label="Recommendation">
+        <RecommendationPage />
+      </div>
+
+      <div label="Course Search">
+        <CourseSearchPage />
+      </div>
+    </Tabs>
   </div>
 );
- 
+
 App.propTypes = {};
- 
+
 export default App;

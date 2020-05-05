@@ -1,16 +1,28 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 import database
 import json
+import model
 
 app = Flask(__name__)
 
+
+
 @app.route('/instructor', methods = ['GET'])
 def get_instructors():
-    return database.get_instructors()
+    if request.args.get('instructor_id') is not None:
+        instructor_id = request.args.get('instructor_id')
+        return database.get_attributes_of_instructor(instructor_id)
+    else:
+        return database.get_instructors()
 
 @app.route('/course', methods = ['GET'])
 def get_courses():
-    return database.get_courses()
+    if request.args.get('instructor_id') is not None:
+        instructor_id = request.args.get('instructor_id')
+        return database.get_courses_taught_by_instructor(instructor_id)
+    else:
+        return database.get_courses()
+
 
 @app.route('/assignment', methods = ['GET'])
 def get_assignments():
@@ -18,7 +30,11 @@ def get_assignments():
 
 @app.route('/related_instructor', methods = ['GET'])
 def get_related_instructors():
-    return database.get_related_instructors()    
+    if request.args.get('instructor_id') is not None:
+        instructor_id = request.args.get('instructor_id')
+        return database.get_instructors_related_to_this_one(instructor_id)
+    else:
+        return database.get_related_instructors()
 
 @app.route('/instructor', methods = ['POST'])
 def insert_instructor():
@@ -79,6 +95,33 @@ def update_assignment():
 def update_related_instructor():
     json = request.json
     return database.update_related_instructor(json)
+
+@app.route('/update_similarities', methods = ['GET'])
+def update_similarities():
+    model.compute_similarities()
+    resp = jsonify(success=True)
+    return resp
+
+@app.route('/attributes_of_course', methods = ['GET'])
+def attributes_of_course():
+    course_id = request.args.get('course_id')
+    return database.get_attributes_of_course(course_id)
+
+@app.route('/get_instructors_who_taught_this_course', methods = ['GET'])
+def instructors_who_taught_this_course():
+    course_id = request.args.get('course_id')
+    return database.get_instructors_who_taught_this_course(course_id)
+
+@app.route('/get_courses_related_to_this_one', methods = ['GET'])
+def courses_related_to_this_one():
+    course_id = request.args.get('course_id')
+    return database.get_courses_related_to_this_one(course_id)
+
+@app.route('/get_recommended_courses', methods = ['GET'])
+def get_recommended_courses():
+    instructor_id = request.args.get('instructor_id')
+    return model.best_courses(instructor_id)
+
 
 if __name__ == '__main__':
     app.run(debug = False)

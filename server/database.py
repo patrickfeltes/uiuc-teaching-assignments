@@ -62,6 +62,18 @@ def create_tables():
     if 'related_instructor' not in existing_tables:
         cursor.execute(related_instructor_query)
 
+    course_similarity_query = '''
+        CREATE TABLE `course_similarity` (
+            `courseID1` int(11) NOT NULL,
+            `courseID2` int(11) NOT NULL,
+            `similarityScore` DOUBLE NOT NULL,
+            PRIMARY KEY (`courseID1`, `courseID2`)
+        )
+    '''
+
+    if 'course_similarity' not in existing_tables:
+        cursor.execute(course_similarity_query)
+
     cursor.close()
     connection.close()
 
@@ -91,7 +103,7 @@ def get_from_table(table_name):
     cursor = connection.cursor()
     query = f'SELECT * FROM {table_name}'
     cursor.execute(query)
-    
+
     results = cursor.fetchall()
     key_names = list(map(lambda x : x[0], cursor.description))
     keyed_results = list(map(lambda x : dict(zip(key_names, x)), results))
@@ -116,7 +128,7 @@ def get_related_instructors():
 def insert_instructor(json):
     connection = connection_pool.get_connection()
     cursor = connection.cursor()
-    
+
     query = f'''
         INSERT INTO instructor
         VALUES(NULL, '{json['name']}')
@@ -132,7 +144,7 @@ def insert_instructor(json):
 def insert_course(json):
     connection = connection_pool.get_connection()
     cursor = connection.cursor()
-    
+
     query = f'''
         INSERT INTO course
         VALUES(NULL, {json['courseNumber']}, '{json['description']}', {json['creditHours']})
@@ -148,7 +160,7 @@ def insert_course(json):
 def insert_assignment(json):
     connection = connection_pool.get_connection()
     cursor = connection.cursor()
-    
+
     query = f'''
         INSERT INTO assignment
         VALUES(NULL, {json['instructorID']}, {json['courseID']}, '{json['semester']}', {json['calendarYear']})
@@ -164,7 +176,7 @@ def insert_assignment(json):
 def insert_related_instructor(json):
     connection = connection_pool.get_connection()
     cursor = connection.cursor()
-    
+
     query = f'''
         INSERT INTO related_instructor
         VALUES(NULL, {json['relatedInstructorID1']}, {json['relatedInstructorID2']})
@@ -256,7 +268,7 @@ def delete_related_instructor(related_id):
 def update_instructor(obj):
     connection = connection_pool.get_connection()
     cursor = connection.cursor()
-    
+
     update_query = f'''
         UPDATE instructor
         SET name = '{obj['name']}'
@@ -280,7 +292,7 @@ def update_instructor(obj):
 def update_course(obj):
     connection = connection_pool.get_connection()
     cursor = connection.cursor()
-    
+
     update_query = f'''
         UPDATE course
         SET courseNumber = {obj['courseNumber']}, description = '{obj['description']}', creditHours = {obj['creditHours']}
@@ -365,3 +377,87 @@ def get_all_instructors_teaching_course(course_id):
     connection.close()
 
     return lst
+
+def get_courses_taught_by_instructor(instructor_id):
+    query = f'''
+        SELECT DISTINCT courseID, courseNumber, description, creditHours
+        FROM
+        (SELECT * FROM assignment WHERE instructorID = {instructor_id}) AS assignment_of_instructor
+        NATURAL JOIN
+        course
+        ORDER BY courseID
+    '''
+    return run_select_query(query)
+
+def get_attributes_of_instructor(instructor_id):
+    query = f'''
+        SELECT instructorID, name
+        FROM instructor
+        WHERE instructorID = {instructor_id}
+
+    '''
+    return run_select_query(query)
+
+def get_attributes_of_course(course_id):
+    query = f'''
+        SELECT courseID, courseNumber, description, creditHours
+        FROM course
+        WHERE courseID = {course_id}
+
+    '''
+    return run_select_query(query)
+
+def get_instructors_who_taught_this_course(course_id):
+    query = f'''
+        SELECT DISTINCT instructorID, name
+        FROM
+        (SELECT * FROM assignment WHERE courseID = {course_id}) AS assignment_of_course
+        NATURAL JOIN
+        instructor
+        ORDER BY instructorID
+    '''
+    return run_select_query(query)
+
+def get_courses_related_to_this_one(course_id):
+    query = f'''
+        SELECT DISTINCT courseID, courseNumber, description, creditHours
+        FROM
+        (SELECT * FROM assignment WHERE instructorID IN (SELECT instructorID
+        FROM
+        (SELECT * FROM assignment WHERE courseID = {course_id}) AS assignment_of_course
+        NATURAL JOIN
+        instructor)) AS assignment_of_instructors NATURAL JOIN course
+        ORDER BY courseID
+    '''
+    return run_select_query(query)
+
+def get_instructors_related_to_this_one(instructor_id):
+    query = f'''
+        SELECT DISTINCT instructorID, name
+        FROM
+        (
+            (SELECT relatedInstructorID1 AS instructorID FROM related_instructor WHERE relatedInstructorID2 = {instructor_id})
+            UNION
+            (SELECT relatedInstructorID2 AS instructorID FROM related_instructor WHERE relatedInstructorID1 = {instructor_id})
+        ) AS related_ids
+        NATURAL JOIN
+        instructor
+        ORDER BY instructorID
+    '''
+    return run_select_query(query)
+
+def run_select_query(query):
+    connection = connection_pool.get_connection()
+    cursor = connection.cursor()
+
+    cursor.execute(query)
+
+    results = cursor.fetchall()
+    key_names = list(map(lambda x : x[0], cursor.description))
+    keyed_results = list(map(lambda x : dict(zip(key_names, x)), results))
+    json_string = json.dumps(keyed_results)
+
+    cursor.close()
+    connection.close()
+
+    return json_string
