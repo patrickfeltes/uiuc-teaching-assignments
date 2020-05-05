@@ -1,6 +1,7 @@
 import mysql.connector.pooling
 import json
 import spacy
+import networkx as nx
 #
 # umbrella_to_course = {}
 #
@@ -160,6 +161,7 @@ def check_same_umbrella(c1, c2):
 connection_pool = mysql.connector.pooling.MySQLConnectionPool(user='root', host='localhost'
                                                               , database='teaching_assignments')
 prereq_dict = {}
+graph = nx.Graph()
 
 
 def update_prereq():
@@ -375,5 +377,61 @@ def compute_similarities():
     cursor.close()
     connection.close()
 
+def create_graph():
+    connection = connection_pool.get_connection()
+    # creating edges between instructors and courses they've taught
+    cursor = connection.cursor()
+    instructor_name_query = """
+        SELECT name
+        FROM instructor
+    """
+    cursor.execute(instructor_name_query)
 
+    instructors = list(set(i[0] for i in cursor.fetchall()))
 
+    cursor.close()
+
+    for i in range(len(instructors)):
+        taught_courses = get_taught_courses(instructors[i])
+        for j in range(len(taught_courses)):
+            graph.add_edge(instructors[i], taught_courses[j], weight=0)
+
+    # creating edges between related courses
+    cursor = connection.cursor()
+
+    course_name_query = """
+        SELECT *
+        FROM course_similarity
+    """
+
+    cursor.execute(course_name_query)
+    courses = list(set(i[0] for i in cursor.fetchall()))
+
+    cursor.close()
+
+    for i in range(len(courses)):
+        if graph.has_edge(courses[i][0], courses[i][1]):
+            continue
+
+        graph.add_edge(courses[i][0], courses[i][1], weight=courses[i][2]])
+
+    # creating edges between related instructors
+    cursor = connection.cursor()
+
+    related_instructor_query = """
+        SELECT *
+        FROM related_instructor
+    """
+
+    cursor.execute(related_instructor_query)
+    related_instructors = list(set(i[0] for i in cursor.fetchall()))
+
+    cursor.close()
+
+    for i in range(len(related_instructors)):
+        if graph.has_edge(related_instructors[i][1], related_instructors[i][2]):
+           graph[related_instructors[i][1]][related_instructors[i][2]]['weight'] += 1
+        else:
+            graph.add_edge((related_instructors[i][1], related_instructors[i][2], weight=1)
+
+    connection.close()
