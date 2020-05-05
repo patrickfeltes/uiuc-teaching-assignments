@@ -161,8 +161,6 @@ def check_same_umbrella(c1, c2):
 connection_pool = mysql.connector.pooling.MySQLConnectionPool(user='root', host='localhost'
                                                               , database='teaching_assignments')
 prereq_dict = {}
-graph = nx.Graph()
-
 
 def update_prereq():
     global prereq_dict
@@ -227,87 +225,6 @@ def get_taught_courses(name):
     cursor.close()
     connection.close()
     return results
-
-
-def get_prof_dict(taught_classes):
-    if not taught_classes:
-        return None
-    connection = connection_pool.get_connection()
-    cursor = connection.cursor()
-    query = """
-        SELECT courseNumber, description
-        FROM course
-    """
-    cursor.execute(query)
-
-    results = cursor.fetchall()
-    rec_dict = {}
-    # make edge list
-    nlp = spacy.load("en_core_web_lg")
-    for n1 in results:
-        if n1[0] in taught_classes:
-            for n2 in results:
-                if n1[0] != n2[0]:  # judge prereq
-                    if n2[0] in prereq_dict:
-                        prereq = prereq_dict[n2[0]]
-                    else:
-                        prereq = []
-                is_umbrella = check_same_umbrella(str(n1[0]), str(n2[0]))  # judge umbrella
-
-                sim_score = nlp(n1[1]).similarity(nlp(n2[1]))
-                if str(n1[0]) in prereq:  # n1 is prereq of n2
-                    if is_umbrella:
-                        score = (1/3) * sim_score + (2/3)
-                    else:
-                        score = 0.5 * sim_score + 0.5
-                else:
-                    score = sim_score
-
-                if n1[0] not in rec_dict:
-                    rec_dict.update({n1[0]: [(n2[0], score)]})
-                else:
-                    rec_dict[n1[0]].append((n2[0], score))
-
-    cursor.close()
-    connection.close()
-    return rec_dict
-
-
-def recommend_course_for_prof(name):
-    print(name)
-    taught_classes = get_taught_courses(name)
-    rec_dict = get_prof_dict(taught_classes)
-    candidates = []
-    if taught_classes:
-        for t in taught_classes:
-            candidates.append(max((i for i in rec_dict[t] if i[0] != t), key=lambda x: x[1]))
-
-    candidates.sort(key=lambda x: x[1], reverse=True)
-
-    if candidates:
-        connection = connection_pool.get_connection()
-        cursor = connection.cursor()
-        query = """
-                SELECT *
-                FROM course
-                WHERE courseNumber={0} 
-            """
-        query = query.format(candidates[0][0])
-        cursor.execute(query)
-
-        results = cursor.fetchall()
-        key_names = list(map(lambda x: x[0], cursor.description))
-        keyed_results = list(map(lambda x: dict(zip(key_names, x)), results))
-        json_string = json.dumps(keyed_results)
-
-        cursor.close()
-        connection.close()
-        print(json_string)
-        return json_string
-    else:
-        print("WTF")
-        return None
-
 
 def compute_similarities():
     update_prereq()
@@ -378,23 +295,25 @@ def compute_similarities():
     connection.close()
 
 def create_graph():
+    graph = nx.DiGraph()
     connection = connection_pool.get_connection()
     # creating edges between instructors and courses they've taught
     cursor = connection.cursor()
     instructor_name_query = """
-        SELECT name
+        SELECT name, instructorID
         FROM instructor
     """
     cursor.execute(instructor_name_query)
 
-    instructors = list(set(i[0] for i in cursor.fetchall()))
+    instructors = list(set(i for i in cursor.fetchall()))
 
     cursor.close()
 
+    # edges between instructors and courses they've taught
     for i in range(len(instructors)):
-        taught_courses = get_taught_courses(instructors[i])
+        taught_courses = get_taught_courses(instructors[i][0])
         for j in range(len(taught_courses)):
-            graph.add_edge(instructors[i], taught_courses[j], weight=0)
+            graph.add_edge(f'i{instructors[i][1]}', f'c{taught_courses[j]}', weight=0)
 
     # creating edges between related courses
     cursor = connection.cursor()
@@ -405,15 +324,29 @@ def create_graph():
     """
 
     cursor.execute(course_name_query)
-    courses = list(set(i[0] for i in cursor.fetchall()))
+    courses = list(set(i for i in cursor.fetchall()))
+
+    course_id_number_query = '''
+        SELECT courseID, courseNumber
+        FROM course
+    '''
+    cursor.execute(course_id_number_query)
+    course_id_numbers = list(set(i for i in cursor.fetchall()))
+
+    course_id_to_num = {}
+    for i in range(len(course_id_numbers)):
+        course_id_to_num[course_id_numbers[i][0]] = course_id_numbers[i][1]
 
     cursor.close()
 
     for i in range(len(courses)):
-        if graph.has_edge(courses[i][0], courses[i][1]):
+        if graph.has_edge(f'c{courses[i][0]}', f'c{courses[i][1]}'):
             continue
+        course0_num = course_id_to_num[courses[i][0]]
+        course1_num = course_id_to_num[courses[i][1]]
 
-        graph.add_edge(courses[i][0], courses[i][1], weight=courses[i][2]])
+        graph.add_edge(f'c{course0_num}', f'c{course1_num}', weight=1 / courses[i][2])
+        graph.add_edge(f'c{course1_num}', f'c{course0_num}', weight=1 / courses[i][2])
 
     # creating edges between related instructors
     cursor = connection.cursor()
@@ -424,14 +357,50 @@ def create_graph():
     """
 
     cursor.execute(related_instructor_query)
-    related_instructors = list(set(i[0] for i in cursor.fetchall()))
+    related_instructors = list(set(i for i in cursor.fetchall()))
 
     cursor.close()
 
     for i in range(len(related_instructors)):
-        if graph.has_edge(related_instructors[i][1], related_instructors[i][2]):
-           graph[related_instructors[i][1]][related_instructors[i][2]]['weight'] += 1
+        if graph.has_edge(f'i{related_instructors[i][1]}', f'i{related_instructors[i][2]}'):
+            current_weight = graph[f'i{related_instructors[i][1]}'][f'i{related_instructors[i][2]}']['weight']
+            new_weight = current_weight * (4.0 / current_weight) / (4.0 / current_weight + 1)
+            graph[f'i{related_instructors[i][1]}'][f'i{related_instructors[i][2]}']['weight'] = new_weight
+            graph[f'i{related_instructors[i][2]}'][f'i{related_instructors[i][1]}']['weight'] = new_weight
         else:
-            graph.add_edge((related_instructors[i][1], related_instructors[i][2], weight=1)
+            graph.add_edge(f'i{related_instructors[i][1]}', f'i{related_instructors[i][2]}', weight=4)
+            graph.add_edge(f'i{related_instructors[i][2]}', f'i{related_instructors[i][1]}', weight=4)
 
     connection.close()
+    return graph
+
+def best_courses(instructor_id):
+    connection = connection_pool.get_connection()
+    cursor = connection.cursor()
+
+    graph = create_graph()
+    paths = nx.single_source_dijkstra(graph, f'i{instructor_id}')[0]
+
+    best_ten_courses = [int(key[1:]) for key in paths.keys() if key[0] == 'c' and paths[key] != 0][:10]
+    
+    select_query = f'SELECT * FROM course WHERE courseNumber IN {repr(tuple(best_ten_courses))}'
+    print(select_query)
+    
+    cursor.execute(select_query)
+    results = cursor.fetchall()
+    key_names = list(map(lambda x : x[0], cursor.description))
+    keyed_results = list(map(lambda x : dict(zip(key_names, x)), results))
+
+    ordered_keyed_results = []
+    for i in range(len(best_ten_courses)):
+        for j in range(len(keyed_results)):
+            if keyed_results[j]["courseNumber"] == best_ten_courses[i]:
+                ordered_keyed_results.append(keyed_results[j])
+        
+    json_string = json.dumps(ordered_keyed_results)
+
+    cursor.close()
+    connection.close()
+
+    return json_string
+

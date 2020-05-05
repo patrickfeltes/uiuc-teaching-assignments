@@ -117,6 +117,11 @@ def courses_related_to_this_one():
     course_id = request.args.get('course_id')
     return database.get_courses_related_to_this_one(course_id)
 
+@app.route('/get_recommended_courses', methods = ['GET'])
+def get_recommended_courses():
+    instructor_id = request.args.get('instructor_id')
+    return model.best_courses(instructor_id)
+
 
 if __name__ == '__main__':
     app.run(debug = False)

@@ -50,13 +50,12 @@ export default class CourseSearchPage extends Component {
     render() {
         return (
             <div className="container">
-                <ButtonLoader />
                 {this.state.options ? <Select options={this.state.options} onChange={this.handleChange} /> : <div></div>}
                 <h1>Course Information</h1>
                 {this.state.attributes ? <JsonTable rows={this.state.attributes} /> : <div />}
                 <h1>Professors who taught this course</h1>
                 {this.state.professors ? <JsonTable rows={this.state.professors} /> : <div />}
-                <h1>Courses which also taught by these instructors</h1>
+                <h1>Courses also taught by these instructors</h1>
                 {this.state.relatedCourses ? <JsonTable rows={this.state.relatedCourses} /> : <div />}
             </div>
         );

@@ -12,7 +12,8 @@ export default class RecommendationPage extends Component {
             options: null,
             attributes: null,
             taughtCourses: null,
-            relatedInstructors: null
+            relatedInstructors: null,
+            recommendedCourses: null,
         };
     }
 
@@ -36,6 +37,12 @@ export default class RecommendationPage extends Component {
                 this.setState({ attributes: data });
             });
         });
+
+        fetch('/get_recommended_courses?instructor_id=' + instructorID).then(response => {
+            response.json().then(data => {
+                this.setState({ recommendedCourses: data });
+            });
+        });
     };
 
     componentWillMount() {
@@ -56,6 +63,8 @@ export default class RecommendationPage extends Component {
                 {this.state.attributes ? <JsonTable rows={this.state.attributes} /> : <div />}
                 <h1>Taught Courses</h1>
                 {this.state.taughtCourses ? <JsonTable rows={this.state.taughtCourses} /> : <div />}
+                <h1>Recommended Courses</h1>
+                {this.state.recommendedCourses ? <JsonTable rows={this.state.recommendedCourses} /> : <div />}
                 <h1>Instructors who also taught these courses</h1>
                 {this.state.relatedInstructors ? <JsonTable rows={this.state.relatedInstructors} /> : <div />}
             </div>

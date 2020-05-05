@@ -24,8 +24,8 @@ export default class ButtonLoader extends Component {
                 style={{ marginRight: "5px" }}
             />
             )}
-            {loading && <span>Refresh Course Similarities (If you added courses or changed descriptions).</span>}
-            {!loading && <span>Refreshing Course Similarities (about 10 s)</span>}
+            {loading && <span>Refreshing Course Similarities (about 10 s)</span>}
+            {!loading && <span>Refresh Course Similarities (If you added courses or changed descriptions).</span>}
         </button>
     );
   }
