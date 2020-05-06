@@ -1,7 +1,14 @@
 import mysql.connector.pooling
 import json
+import os
 
-connection_pool = mysql.connector.pooling.MySQLConnectionPool(user='root', host='localhost', database='teaching_assignments')
+host_name = os.environ['DB_HOSTNAME']
+user = os.environ['DB_USER']
+password = os.environ['DB_PASS']
+database_name = os.environ['DB_NAME']
+
+connection_pool = mysql.connector.pooling.MySQLConnectionPool(user=user, password=password, host=host_name, port=3306, pool_name="pool", database=database_name)
+
 
 def create_tables():
     connection = connection_pool.get_connection()
@@ -140,6 +147,23 @@ def insert_instructor(json):
     cursor.close()
     connection.close()
     return new_primary_key
+
+def insert_instructors(tuples):
+    connection = connection_pool.get_connection()
+    cursor = connection.cursor()
+
+    values = ','.join(tuples)
+
+    query = f'''
+        INSERT INTO instructor
+        VALUES
+        {values}
+    '''
+
+    print(query)
+
+    cursor.close()
+    connection.close()
 
 def insert_course(json):
     connection = connection_pool.get_connection()
@@ -461,3 +485,13 @@ def run_select_query(query):
     connection.close()
 
     return json_string
+
+def run_raw_query(query):
+    connection = connection_pool.get_connection()
+    cursor = connection.cursor()
+    cursor.execute(query)
+    connection.commit()
+    cursor.close()
+    connection.close()
+
+print(insert_instructors)

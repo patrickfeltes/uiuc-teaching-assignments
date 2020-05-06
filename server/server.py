@@ -5,8 +5,6 @@ import model
 
 app = Flask(__name__)
 
-
-
 @app.route('/instructor', methods = ['GET'])
 def get_instructors():
     if request.args.get('instructor_id') is not None:
