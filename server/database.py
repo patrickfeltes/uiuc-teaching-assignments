@@ -2,13 +2,7 @@ import mysql.connector.pooling
 import json
 import os
 
-host_name = os.environ['DB_HOSTNAME']
-user = os.environ['DB_USER']
-password = os.environ['DB_PASS']
-database_name = os.environ['DB_NAME']
-
-connection_pool = mysql.connector.pooling.MySQLConnectionPool(user=user, password=password, host=host_name, port=3306, pool_name="pool", database=database_name)
-
+connection_pool = mysql.connector.pooling.MySQLConnectionPool(user='root', host='localhost', pool_name="pool", database='teaching_assignments')
 
 def create_tables():
     connection = connection_pool.get_connection()

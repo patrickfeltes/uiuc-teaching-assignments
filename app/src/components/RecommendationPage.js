@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import Select from 'react-select';
 import ButtonLoader from './ButtonLoader';
 const JsonTable = require('ts-react-json-table');
-const BASE_URL = 'https://cs411-server.herokuapp.com';
 
 export default class RecommendationPage extends Component {
 
@@ -21,25 +20,25 @@ export default class RecommendationPage extends Component {
     handleChange = (newValue) => {
         const instructorID = newValue["value"];
 
-        fetch(BASE_URL + '/course?instructor_id=' + instructorID).then(response => {
+        fetch('/course?instructor_id=' + instructorID).then(response => {
             response.json().then(data => {
                 this.setState({ taughtCourses: data });
             });
         });
 
-        fetch(BASE_URL + '/related_instructor?instructor_id=' + instructorID).then(response => {
+        fetch('/related_instructor?instructor_id=' + instructorID).then(response => {
             response.json().then(data => {
                 this.setState({ relatedInstructors: data });
             });
         });
 
-        fetch(BASE_URL + '/instructor?instructor_id=' + instructorID).then(response => {
+        fetch('/instructor?instructor_id=' + instructorID).then(response => {
             response.json().then(data => {
                 this.setState({ attributes: data });
             });
         });
 
-        fetch(BASE_URL + '/get_recommended_courses?instructor_id=' + instructorID).then(response => {
+        fetch('/get_recommended_courses?instructor_id=' + instructorID).then(response => {
             response.json().then(data => {
                 this.setState({ recommendedCourses: data });
             });
@@ -47,7 +46,7 @@ export default class RecommendationPage extends Component {
     };
 
     componentWillMount() {
-        fetch(BASE_URL + '/instructor').then(response => {
+        fetch('/instructor').then(response => {
             response.json().then(data => {
                 var mappedData = data.map((val) => { return { label: val["name"], value: val["instructorID"]} });
                 this.setState({ options: mappedData });

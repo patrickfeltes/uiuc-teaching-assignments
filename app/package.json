@@ -43,5 +43,5 @@
   "devDependencies": {
     "gh-pages": "^2.2.0"
   },
-  "homepage": "http://patrickfeltes.github.io/uiuc-teaching-assignments"
+  "homepage": "http://localhost:5000"
 }
