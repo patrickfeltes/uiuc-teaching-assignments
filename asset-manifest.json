@@ -1,0 +1,22 @@
+{
+  "files": {
+    "main.css": "/teaching-assignment-recommender/static/css/main.c4baf834.chunk.css",
+    "main.js": "/teaching-assignment-recommender/static/js/main.c384f788.chunk.js",
+    "main.js.map": "/teaching-assignment-recommender/static/js/main.c384f788.chunk.js.map",
+    "runtime-main.js": "/teaching-assignment-recommender/static/js/runtime-main.01e491e3.js",
+    "runtime-main.js.map": "/teaching-assignment-recommender/static/js/runtime-main.01e491e3.js.map",
+    "static/js/2.6c7293af.chunk.js": "/teaching-assignment-recommender/static/js/2.6c7293af.chunk.js",
+    "static/js/2.6c7293af.chunk.js.map": "/teaching-assignment-recommender/static/js/2.6c7293af.chunk.js.map",
+    "index.html": "/teaching-assignment-recommender/index.html",
+    "precache-manifest.e210ab7500f23785ce9b9598ff098e82.js": "/teaching-assignment-recommender/precache-manifest.e210ab7500f23785ce9b9598ff098e82.js",
+    "service-worker.js": "/teaching-assignment-recommender/service-worker.js",
+    "static/css/main.c4baf834.chunk.css.map": "/teaching-assignment-recommender/static/css/main.c4baf834.chunk.css.map",
+    "static/js/2.6c7293af.chunk.js.LICENSE.txt": "/teaching-assignment-recommender/static/js/2.6c7293af.chunk.js.LICENSE.txt"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.01e491e3.js",
+    "static/js/2.6c7293af.chunk.js",
+    "static/css/main.c4baf834.chunk.css",
+    "static/js/main.c384f788.chunk.js"
+  ]
+}
