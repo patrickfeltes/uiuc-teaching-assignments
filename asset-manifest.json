@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "/uiuc-teaching-assignments/static/css/main.c4baf834.chunk.css",
-    "main.js": "/uiuc-teaching-assignments/static/js/main.6c450826.chunk.js",
-    "main.js.map": "/uiuc-teaching-assignments/static/js/main.6c450826.chunk.js.map",
+    "main.js": "/uiuc-teaching-assignments/static/js/main.cdca2f84.chunk.js",
+    "main.js.map": "/uiuc-teaching-assignments/static/js/main.cdca2f84.chunk.js.map",
     "runtime-main.js": "/uiuc-teaching-assignments/static/js/runtime-main.22946765.js",
     "runtime-main.js.map": "/uiuc-teaching-assignments/static/js/runtime-main.22946765.js.map",
     "static/js/2.6c7293af.chunk.js": "/uiuc-teaching-assignments/static/js/2.6c7293af.chunk.js",
     "static/js/2.6c7293af.chunk.js.map": "/uiuc-teaching-assignments/static/js/2.6c7293af.chunk.js.map",
     "index.html": "/uiuc-teaching-assignments/index.html",
-    "precache-manifest.5407ad4b612299cdc8e57af0720d65a5.js": "/uiuc-teaching-assignments/precache-manifest.5407ad4b612299cdc8e57af0720d65a5.js",
+    "precache-manifest.477d127ac1bccc31ca8f6ce5bf9056e4.js": "/uiuc-teaching-assignments/precache-manifest.477d127ac1bccc31ca8f6ce5bf9056e4.js",
     "service-worker.js": "/uiuc-teaching-assignments/service-worker.js",
     "static/css/main.c4baf834.chunk.css.map": "/uiuc-teaching-assignments/static/css/main.c4baf834.chunk.css.map",
     "static/js/2.6c7293af.chunk.js.LICENSE.txt": "/uiuc-teaching-assignments/static/js/2.6c7293af.chunk.js.LICENSE.txt"
@@ -17,6 +17,6 @@
     "static/js/runtime-main.22946765.js",
     "static/js/2.6c7293af.chunk.js",
     "static/css/main.c4baf834.chunk.css",
-    "static/js/main.6c450826.chunk.js"
+    "static/js/main.cdca2f84.chunk.js"
   ]
 }
