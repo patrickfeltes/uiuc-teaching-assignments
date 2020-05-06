@@ -1,10 +1,10 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "383392fd17185381795cbe61d1a3c10b",
+    "revision": "a7d1f6d53e9cf1f8420617b8abef16d5",
     "url": "/uiuc-teaching-assignments/index.html"
   },
   {
-    "revision": "82dcd61760fc8d405a69",
+    "revision": "c5f0fef9e1c35c800dc3",
     "url": "/uiuc-teaching-assignments/static/css/main.c4baf834.chunk.css"
   },
   {
@@ -16,8 +16,8 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/uiuc-teaching-assignments/static/js/2.6c7293af.chunk.js.LICENSE.txt"
   },
   {
-    "revision": "82dcd61760fc8d405a69",
-    "url": "/uiuc-teaching-assignments/static/js/main.cdca2f84.chunk.js"
+    "revision": "c5f0fef9e1c35c800dc3",
+    "url": "/uiuc-teaching-assignments/static/js/main.93abc881.chunk.js"
   },
   {
     "revision": "61938ed2437954aab22c",
