@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 
+const BASE_URL = 'https://cs411-server.herokuapp.com';
 export default class ButtonLoader extends Component {
   state = {
     loading: false
@@ -8,7 +9,7 @@ export default class ButtonLoader extends Component {
   fetchData = () => {
     this.setState({ loading: true });
 
-    fetch('/update_similarities').then(response => {
+    fetch(BASE_URL + '/update_similarities').then(response => {
         this.setState( { loading: false });
     });
   };

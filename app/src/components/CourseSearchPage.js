@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import Select from 'react-select';
 import ButtonLoader from './ButtonLoader';
 const JsonTable = require('ts-react-json-table');
+const BASE_URL = 'https://cs411-server.herokuapp.com';
 
 export default class CourseSearchPage extends Component {
 
@@ -19,19 +20,19 @@ export default class CourseSearchPage extends Component {
     handleChange = (newValue) => {
         const courseID = newValue["value"];
 
-        fetch('/get_instructors_who_taught_this_course?course_id=' + courseID).then(response => {
+        fetch(BASE_URL + '/get_instructors_who_taught_this_course?course_id=' + courseID).then(response => {
             response.json().then(data => {
                 this.setState({ professors: data });
             });
         });
 
-        fetch('/get_courses_related_to_this_one?course_id=' + courseID).then(response => {
+        fetch(BASE_URL + '/get_courses_related_to_this_one?course_id=' + courseID).then(response => {
             response.json().then(data => {
                 this.setState({ relatedCourses: data });
             });
         });
 
-        fetch('/attributes_of_course?course_id=' + courseID).then(response => {
+        fetch(BASE_URL + '/attributes_of_course?course_id=' + courseID).then(response => {
             response.json().then(data => {
                 this.setState({ attributes: data });
             });
@@ -39,7 +40,7 @@ export default class CourseSearchPage extends Component {
     };
 
     componentWillMount() {
-        fetch('/course').then(response => {
+        fetch(BASE_URL + '/course').then(response => {
             response.json().then(data => {
                 var mappedData = data.map((val) => { return { label: val["courseNumber"], value: val["courseID"]} });
                 this.setState({ options: mappedData });

@@ -7,15 +7,16 @@ import CRUDTable,
   UpdateForm,
   DeleteForm,
 } from 'react-crud-table';
+const BASE_URL = 'https://cs411-server.herokuapp.com';
  
 const assignmentService = {
   fetchItems: (payload) => {
-    return fetch('/assignment').then(response => {
+    return fetch(BASE_URL + '/assignment').then(response => {
       return response.json();
     });
   },
   create: (assignment) => {
-    return fetch('/assignment', {
+    return fetch(BASE_URL + '/assignment', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -25,7 +26,7 @@ const assignmentService = {
     });
   },
   update: (assignment) => {
-    return fetch('/assignment', {
+    return fetch(BASE_URL + '/assignment', {
       method: 'PUT',
       headers: {
         'Accept': 'application/json',
@@ -35,7 +36,7 @@ const assignmentService = {
     });
   },
   delete: (data) => {
-    return fetch('/assignment/' + data.assignmentID, {
+    return fetch(BASE_URL + '/assignment/' + data.assignmentID, {
       method: 'DELETE',
       headers: {
         'Accept': 'application/json',
