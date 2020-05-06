@@ -1,20 +1,20 @@
 {
   "files": {
-    "main.css": "/teaching-assignment-recommender/static/css/main.c4baf834.chunk.css",
-    "main.js": "/teaching-assignment-recommender/static/js/main.c384f788.chunk.js",
-    "main.js.map": "/teaching-assignment-recommender/static/js/main.c384f788.chunk.js.map",
-    "runtime-main.js": "/teaching-assignment-recommender/static/js/runtime-main.01e491e3.js",
-    "runtime-main.js.map": "/teaching-assignment-recommender/static/js/runtime-main.01e491e3.js.map",
-    "static/js/2.6c7293af.chunk.js": "/teaching-assignment-recommender/static/js/2.6c7293af.chunk.js",
-    "static/js/2.6c7293af.chunk.js.map": "/teaching-assignment-recommender/static/js/2.6c7293af.chunk.js.map",
-    "index.html": "/teaching-assignment-recommender/index.html",
-    "precache-manifest.e210ab7500f23785ce9b9598ff098e82.js": "/teaching-assignment-recommender/precache-manifest.e210ab7500f23785ce9b9598ff098e82.js",
-    "service-worker.js": "/teaching-assignment-recommender/service-worker.js",
-    "static/css/main.c4baf834.chunk.css.map": "/teaching-assignment-recommender/static/css/main.c4baf834.chunk.css.map",
-    "static/js/2.6c7293af.chunk.js.LICENSE.txt": "/teaching-assignment-recommender/static/js/2.6c7293af.chunk.js.LICENSE.txt"
+    "main.css": "/uiuc-teaching-assignments/static/css/main.c4baf834.chunk.css",
+    "main.js": "/uiuc-teaching-assignments/static/js/main.c384f788.chunk.js",
+    "main.js.map": "/uiuc-teaching-assignments/static/js/main.c384f788.chunk.js.map",
+    "runtime-main.js": "/uiuc-teaching-assignments/static/js/runtime-main.22946765.js",
+    "runtime-main.js.map": "/uiuc-teaching-assignments/static/js/runtime-main.22946765.js.map",
+    "static/js/2.6c7293af.chunk.js": "/uiuc-teaching-assignments/static/js/2.6c7293af.chunk.js",
+    "static/js/2.6c7293af.chunk.js.map": "/uiuc-teaching-assignments/static/js/2.6c7293af.chunk.js.map",
+    "index.html": "/uiuc-teaching-assignments/index.html",
+    "precache-manifest.d88d5e83add0097dd699286c4f467284.js": "/uiuc-teaching-assignments/precache-manifest.d88d5e83add0097dd699286c4f467284.js",
+    "service-worker.js": "/uiuc-teaching-assignments/service-worker.js",
+    "static/css/main.c4baf834.chunk.css.map": "/uiuc-teaching-assignments/static/css/main.c4baf834.chunk.css.map",
+    "static/js/2.6c7293af.chunk.js.LICENSE.txt": "/uiuc-teaching-assignments/static/js/2.6c7293af.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
-    "static/js/runtime-main.01e491e3.js",
+    "static/js/runtime-main.22946765.js",
     "static/js/2.6c7293af.chunk.js",
     "static/css/main.c4baf834.chunk.css",
     "static/js/main.c384f788.chunk.js"
