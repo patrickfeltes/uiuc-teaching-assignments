@@ -252,7 +252,6 @@ def create_graph(connection):
 
     cursor.close()
 
-
     cursor = connection.cursor()
     query = '''
         SELECT instructorID, c.courseNumber
@@ -273,6 +272,8 @@ def create_graph(connection):
 
     # edges between instructors and courses they've taught
     for i in range(len(instructors)):
+        if instructors[i][1] not in assignments_dict.keys():
+            continue
         taught_courses = assignments_dict[instructors[i][1]]
         for j in range(len(taught_courses)):
             graph.add_edge(f'i{instructors[i][1]}', f'c{taught_courses[j]}', weight=0)
