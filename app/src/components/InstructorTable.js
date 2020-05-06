@@ -12,7 +12,7 @@ const BASE_URL = 'https://cs411-server.herokuapp.com';
 
 const instructorService = {
   fetchItems: (payload) => {
-    return fetch('/instructor').then(response => {
+    return fetch(BASE_URL + '/instructor').then(response => {
       return response.json();
     });
   },
