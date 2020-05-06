@@ -2,37 +2,13 @@ import mysql.connector.pooling
 import json
 import spacy
 import networkx as nx
-#
-# umbrella_to_course = {}
-#
-# sf_list = [421, 422, 426, 427, 428, 429, 476, 477, 492, 493, 494, 498, 522, 524, 526, 527, 528, 576, 598]
-# umbrella_to_course["Software Foundations"] = sf_list
-#
-# amc_list = [413, 473, 475, 476, 477, 481, 482, 498, 571, 572, 573, 574, 575, 576, 579, 583, 584, 598]
-# umbrella_to_course["Algorithms and Models of Computation"] = amc_list
-#
-# ibd_list = [410, 411, 412, 414, 440, 443, 445, 446, 447, 466, 467, 498, 510, 511, 512, 543, 544, 546, 548, 566, 576, 598]
-# umbrella_to_course["Intelligence and Big Data"] = ibd_list
-#
-# hsi_list = [460, 461, 463, 465, 467, 468, 498, 563, 565]
-# umbrella_to_course["Human and Social Impact"] = hsi_list
-#
-# media_list = [414, 418, 419, 445, 465, 467, 468, 498, 519, 565, 598]
-# umbrella_to_course["Media"] = media_list
-#
-# sphpc_list = [419, 450, 457, 466, 482, 483, 484, 498, 519, 554, 555, 556, 558]
-# umbrella_to_course["Scientific, Parallel, and High Performance Computing"] = sphpc_list
-#
-# dsns_list = [423, 424, 425, 431, 436, 438, 439, 460, 461, 463, 483, 484, 498, 523, 524, 525, 538, 563]
-# umbrella_to_course["Distributed Systems, Networking, and Security"] = dsns_list
-#
-# mach_list = [423, 424, 426, 431, 433, 484, 498, 523, 526, 533, 536, 541, 584, 598]
-# umbrella_to_course["Machines"] = mach_list
-#
-# unknown_list = [100, 125, 126, 173, 210, 225, 233, 241, 357, 361, 374, 242, 231, 232]
-# umbrella_to_course["Unknown"] = unknown_list
-#
-# # ############################################################################################
+
+import os
+
+host_name = os.environ['DB_HOSTNAME']
+user = os.environ['DB_USER']
+password = os.environ['DB_PASS']
+database_name = os.environ['DB_NAME']
 
 course_to_umbrella = {}
 
@@ -158,8 +134,9 @@ def check_same_umbrella(c1, c2):
 
 # recommendation part
 
-connection_pool = mysql.connector.pooling.MySQLConnectionPool(user='root', host='localhost'
-                                                              , database='teaching_assignments')
+# connection_pool = mysql.connector.pooling.MySQLConnectionPool(user='root', host='localhost'
+#                                                               , database='teaching_assignments')
+connection_pool = mysql.connector.pooling.MySQLConnectionPool(user=user, password=password, host=host_name, port=3306, pool_name="pool", database=database_name)
 prereq_dict = {}
 
 def update_prereq():
@@ -202,29 +179,6 @@ def update_prereq():
 
     cursor.close()
     connection.close()
-
-
-def get_taught_courses(name):
-    connection = connection_pool.get_connection()
-    cursor = connection.cursor()
-    query = """
-        SELECT c.courseNumber
-        FROM instructor i 
-        INNER JOIN 
-        assignment a 
-        ON i.instructorID = a.instructorID
-        INNER JOIN
-        course c
-        ON c.courseID = a.courseID
-        WHERE name = '{0}'
-    """
-    query = query.format(name)
-    cursor.execute(query)
-
-    results = list(set(i[0] for i in cursor.fetchall()))
-    cursor.close()
-    connection.close()
-    return results
 
 def compute_similarities():
     update_prereq()
@@ -294,9 +248,8 @@ def compute_similarities():
     cursor.close()
     connection.close()
 
-def create_graph():
+def create_graph(connection):
     graph = nx.DiGraph()
-    connection = connection_pool.get_connection()
     # creating edges between instructors and courses they've taught
     cursor = connection.cursor()
     instructor_name_query = """
@@ -309,9 +262,28 @@ def create_graph():
 
     cursor.close()
 
+
+    cursor = connection.cursor()
+    query = '''
+        SELECT instructorID, c.courseNumber
+        FROM assignment
+        NATURAL JOIN
+        course c
+    '''
+    cursor.execute(query)
+    assignments = list(set(i for i in cursor.fetchall()))
+    cursor.close()
+
+    assignments_dict = {}
+    for x in assignments:
+        if x[0] in assignments_dict:
+            assignments_dict[x[0]].append(x[1])
+        else:
+            assignments_dict[x[0]] = [x[1]]
+
     # edges between instructors and courses they've taught
     for i in range(len(instructors)):
-        taught_courses = get_taught_courses(instructors[i][0])
+        taught_courses = assignments_dict[instructors[i][1]]
         for j in range(len(taught_courses)):
             graph.add_edge(f'i{instructors[i][1]}', f'c{taught_courses[j]}', weight=0)
 
@@ -371,20 +343,18 @@ def create_graph():
             graph.add_edge(f'i{related_instructors[i][1]}', f'i{related_instructors[i][2]}', weight=4)
             graph.add_edge(f'i{related_instructors[i][2]}', f'i{related_instructors[i][1]}', weight=4)
 
-    connection.close()
     return graph
 
 def best_courses(instructor_id):
     connection = connection_pool.get_connection()
     cursor = connection.cursor()
 
-    graph = create_graph()
+    graph = create_graph(connection)
     paths = nx.single_source_dijkstra(graph, f'i{instructor_id}')[0]
 
     best_ten_courses = [int(key[1:]) for key in paths.keys() if key[0] == 'c' and paths[key] != 0][:10]
     
     select_query = f'SELECT * FROM course WHERE courseNumber IN {repr(tuple(best_ten_courses))}'
-    print(select_query)
     
     cursor.execute(select_query)
     results = cursor.fetchall()
