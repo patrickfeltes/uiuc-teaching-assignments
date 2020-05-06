@@ -20,6 +20,14 @@ const App = () => (
         <CourseTable />
       </div>
 
+      <div label="Assignments">
+        <AssignmentTable />
+      </div>
+
+      <div label="Related Instrutors">
+        <RelatedInstructorTable />
+      </div>
+
       <div label="Recommendation">
         <RecommendationPage />
       </div>
