@@ -11,7 +11,7 @@
     "react-crud-table": "0.0.8",
     "react-dom": "^16.13.0",
     "react-json-table": "^0.1.1",
-    "react-scripts": "3.4.0",
+    "react-scripts": "5.0.1",
     "react-select": "^2.4.4",
     "ts-react-json-table": "^0.1.2"
   },
